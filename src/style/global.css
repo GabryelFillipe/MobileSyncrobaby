@@ -1,0 +1,65 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@import "nativewind/theme";
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #9d87d2;
+  --color-primary-dark: #8c76bd;
+  --color-primary-darker: #7963ab;
+  --color-accent: #9334ea;
+  --color-accent-dark: #722cb2;
+  --color-accent-darker: #7c3aed;
+
+  --color-lightest: #fbf7ff;
+  --color-light: #f9f5ff;
+  --color-lilas-bg: #e1d5ff;
+  --color-lilas-ultralight: #f3e8ff;
+  --color-lilas: #e5daff;
+  --color-lilas-light: #e2cfff;
+  --color-lilas-medium: #d2beff;
+  --color-lilas-dark: #c5b2f0;
+  --color-purple-muted: #af9fd5;
+
+  --color-primary-text: #41354c;
+  --color-secondary-text: #4a3f65;
+  --color-welcome-text: #2c3e50;
+  --color-dark-purple: #534573;
+  --color-dark-purple-muted: #665689;
+  --color-darker-purple: #30104b;
+  --color-shadow-purple: #6e4794;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-dark-gray: #191919;
+  --color-gray-dark: #6d727f;
+  --color-gray-medium: #7d7d7d;
+  --color-gray-placeholder: #9c9c9c;
+  --color-gray-light: #9ea3ae;
+  --color-gray-border: #e5e5e5;
+
+  --color-red-light: #ef4444;
+  --color-red-alert: #f87171;
+  --color-red-error: #ff0000;
+  --color-yellow-warning: #f5960a;
+  --color-green-success: #10b981;
+  --color-green-alert: #8ddb68;
+  --color-green-dark: #3e5534;
+  --color-green-measures: #10b981;
+  --color-yellow-measures: #b9a510;
+  --color-red-measures: #b91048;
+  --color-green-result-measures-desk: #c9eea9;
+  --color-yellow-result-measures-desk: #eee7a9;
+  --color-red-result-measures-desk: #eea9a9;
+  --color-blue-info: #68cadb;
+
+  --font-nunito: "Nunito", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --font-inter: "Inter", sans-serif;
+
+  --shadow-purple-sm: 2px 2px 2px rgba(110, 71, 148, 0.25);
+  --shadow-purple-md: 4px 4px 4px rgba(110, 71, 148, 0.25);
+}
