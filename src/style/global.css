@@ -63,3 +63,8 @@
   --shadow-purple-sm: 2px 2px 2px rgba(110, 71, 148, 0.25);
   --shadow-purple-md: 4px 4px 4px rgba(110, 71, 148, 0.25);
 }
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
