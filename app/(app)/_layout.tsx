@@ -80,17 +80,18 @@ export default function RootLayout() {
       className="flex h-screen w-screen bg-light"
       style={{ flex: 1 }}
     >
-      <View className="flex h-screen w-screen bg-light " style={{ flex: 1 }}>
-        <Header />
-        <NavigationBar listIcons={listIcons} />
-
+      <Header />
+      <NavigationBar listIcons={listIcons} />
+      <View
+        className="min-w-screen h-full overflow-y-auto xl:flex xl:justify-end"
+        style={{ flex: 1 }}
+      >
         <View
-          className="min-w-screen h-full overflow-y-auto xl:flex xl:justify-end"
-          style={{ flex: 1 }}
+          className="content flex w-full min-h-full px-6 pt-25 pb-24
+        md:px-14 md:pb-30
+        xl:px-20 xl:w-[calc(100%-15%)] xl:max-w-[calc(100%-200px)] xl:pb-8"
         >
-          <View className="content flex w-full min-h-full px-6 pt-25 pb-24 md:px-14 md:pb-30 xl:px-20 xl:w-[85%] xl:max-w-[calc(100%-200px)] xl:pb-8">
-            <Slot />
-          </View>
+          <Slot />
         </View>
       </View>
     </SafeAreaView>
