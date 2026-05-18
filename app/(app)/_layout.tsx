@@ -1,11 +1,12 @@
 import { Slot } from "expo-router";
 import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import NavigationBar, {
+  useTabBarOccupiedSpace,
+} from "../../src/components/NavigationBar";
 
 import "../../src/style/global.css";
 
 import Header from "../../src/components/Header";
-import NavigationBar from "../../src/components/NavigationBar";
 
 import Pediatrician from "../../src/assets/icons/pediatricianIcon.svg";
 import ArticlesIcon from "../../src/assets/navigation/articles.svg";
@@ -75,25 +76,15 @@ export const listIcons: IconsNavigation[] = [
 ];
 
 export default function RootLayout() {
+  const bottomInset = useTabBarOccupiedSpace();
+
   return (
-    <SafeAreaView
-      className="flex h-screen w-screen bg-light"
-      style={{ flex: 1 }}
-    >
+    <View className="flex-1 bg-light" style={{ flex: 1 }}>
       <Header />
-      <NavigationBar listIcons={listIcons} />
-      <View
-        className="min-w-screen h-full overflow-y-auto xl:flex xl:justify-end"
-        style={{ flex: 1 }}
-      >
-        <View
-          className="content flex w-full min-h-full px-6 pt-25 pb-24
-        md:px-14 md:pb-30
-        xl:px-20 xl:w-[calc(100%-15%)] xl:max-w-[calc(100%-200px)] xl:pb-8"
-        >
-          <Slot />
-        </View>
+      <View style={{ flex: 1, paddingBottom: bottomInset }}>
+        <Slot />
       </View>
-    </SafeAreaView>
+      <NavigationBar listIcons={listIcons} />
+    </View>
   );
 }

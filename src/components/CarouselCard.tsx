@@ -18,14 +18,18 @@ export function CarouselCard({
   const navigation = useNavigation<any>();
 
   return (
-    <View className="min-w-full h-40 flex items-center  justify-between bg-lilas rounded-2xl p-6 md:p-8 xl:p-10 snap-center relative overflow-hidden md:min-h-55 xl:min-h-75">
-      <View className="flex flex-col justify-center gap-2 md:gap-3 w-full md:w-[65%] z-10">
+    <View className="w-full flex-row items-center bg-lilas rounded-2xl p-4 md:p-8 min-h-[160px] md:min-h-[220px] relative overflow-hidden md:snap-center">
+      <View className="flex-1 flex-col justify-center gap-2 md:gap-3 pr-2 md:pr-4 z-10 min-w-0">
         <Text className="hidden md:flex bg-lilas text-primary text-[10px] md:text-xs font-bold px-3 py-1 rounded-full w-max mb-1">
           Destaque da Semana
         </Text>
 
-        <Text className="text-lg md:text-2xl xl:text-3xl font-extrabold text-primary-text uppercase leading-tight font-poppins">
-          {textPre} <Text className="text-primary">{textHighlight}</Text>
+        <Text
+          className="text-lg md:text-2xl xl:text-3xl font-extrabold text-primary-text uppercase leading-tight font-poppins"
+          numberOfLines={3}
+        >
+          {textPre}
+          <Text className="text-primary">{textHighlight}</Text>
         </Text>
 
         {description && (
@@ -44,11 +48,13 @@ export function CarouselCard({
         </Pressable>
       </View>
 
-      <View className="w-[35%] md:w-[30%] flex justify-end items-center z-10">
+      <View className="w-[36%] max-w-[150px] md:w-[30%] md:max-w-none flex justify-center items-center z-10 shrink-0 self-stretch">
         <Image
           source={typeof img === "string" ? { uri: img } : img}
           alt="Ilustração do artigo"
-          className="w-full max-w-30 md:max-w-45 xl:max-w-55 object-contain"
+          resizeMode="contain"
+          className="w-full h-full max-h-[130px] md:max-h-[200px]"
+          style={{ width: "100%", minHeight: 110 }}
         />
       </View>
     </View>

@@ -7,12 +7,36 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import arrowIcon from "../assets/navigation/ArrowIcon.svg";
 import Logo from "../assets/navigation/logoHeader.png";
 import Profile from "../assets/navigation/profileHeader.svg";
 
 import type { IconsNavigation } from "../../app/(app)/_layout";
+
+/** Altura aproximada da “pílula” da barra (h-20 + margens). Use no padding do conteúdo rolável. */
+export const MOBILE_TAB_BAR_CONTENT_HEIGHT = 88;
+
+/**
+ * Espaço vertical que a barra inferior ocupa quando largura é menor que 1280px (tab bar).
+ * Sidebar em `xl:` não cobre o rodapé do conteúdo — neste caso retorna 0.
+ * Use em `paddingBottom` do recipiente que envolve cada tela ou do `ScrollView` principal.
+ */
+export function useTabBarOccupiedSpace(): number {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+
+  if (width >= 1280) return 0;
+
+  const safeBottom = Math.max(
+    insets.bottom,
+    Platform.OS === "android" ? 12 : Platform.OS === "ios" ? 8 : 0,
+  );
+
+  // mb-2 da pílula + HOME indicator / navegação por gestos
+  return MOBILE_TAB_BAR_CONTENT_HEIGHT + safeBottom + 8;
+}
 
 interface Props {
   listIcons: IconsNavigation[];
@@ -22,6 +46,12 @@ function NavigationBar({ listIcons }: Props) {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1280;
+  const insets = useSafeAreaInsets();
+
+  /** Espaço a reservar no fundo das telas (barra flutuante + home indicator Android/iOS). */
+  const bottomInset = isDesktop
+    ? 0
+    : Math.max(insets.bottom, Platform.OS === "android" ? 8 : 0);
 
   const renderIcon = (iconSource: any, props: any) => {
     if (typeof iconSource === "function") {
@@ -40,12 +70,20 @@ function NavigationBar({ listIcons }: Props) {
 
   return (
     <View
+      pointerEvents="box-none"
       className="fixed bottom-0 flex flex-row justify-center w-full h-22 md:h-28 z-100 bg-light backdrop-blur-sm 
       xl:left-0 xl:w-[15%] xl:min-w-50 xl:h-screen xl:bg-primary xl:flex-col xl:justify-between"
       style={
         Platform.OS !== "web"
-          ? { position: "absolute", bottom: 0, width: "100%" }
-          : {}
+          ? {
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              width: "100%",
+              paddingBottom: bottomInset,
+            }
+          : { paddingBottom: bottomInset }
       }
     >
       <View
@@ -65,8 +103,8 @@ function NavigationBar({ listIcons }: Props) {
         </View>
 
         <View
-          className="flex flex-row isolate justify-around items-center w-[90%] h-20 bg-lilas rounded-lg
-          xl:flex-col xl:bg-transparent xl:w-auto xl:h-auto xl:items-start xl:gap-2 xl:mt-4"
+          className="flex flex-row isolate justify-around items-center w-[90%] h-20 bg-lilas rounded-lg mb-2
+          xl:flex-col xl:bg-transparent xl:w-auto xl:h-auto xl:items-start xl:gap-2 xl:mt-4 xl:mb-0"
         >
           <Text
             className="hidden
@@ -77,7 +115,7 @@ function NavigationBar({ listIcons }: Props) {
           {listIcons.slice(0, 4).map((icon) => (
             <Link key={icon.id} href={icon.path as any} asChild>
               <Pressable
-                className="relative isolate justify-center items-center 
+                className="relative isolate justify-center items-center min-w-[56px] min-h-[56px]
                 xl:w-auto xl:h-9 xl:rounded-lg xl:hover:bg-white/20 xl:hover:scale-103 xl:transition xl:duration-200"
               >
                 {!isDesktop && pathname === icon.path && (
@@ -85,7 +123,7 @@ function NavigationBar({ listIcons }: Props) {
                 )}
 
                 <View
-                  className={`flex flex-col items-center gap-1 z-60
+                  className={`flex flex-col items-center gap-1 z-60 py-1
                   xl:flex-row xl:w-full xl:h-full xl:gap-4 xl:rounded-lg xl:p-2
                   ${pathname === icon.path && isDesktop ? "xl:bg-white/40" : ""}`}
                 >

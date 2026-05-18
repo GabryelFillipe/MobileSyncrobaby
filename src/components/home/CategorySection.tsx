@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { CategoryItem } from "./CategoryItem";
 
 interface Category {
@@ -17,29 +17,62 @@ export function CategorySection({
   categories,
   onCategoryClick,
 }: CategorySectionProps) {
+  const { width } = useWindowDimensions();
+  const isWide = width >= 768;
+
   return (
     <View className="w-full flex flex-col gap-2 md:gap-6 justify-center">
       <Text className="text-xl md:text-2xl font-bold font-poppins text-primary-text">
         Categorias
       </Text>
 
-      <View
-        className="w-full flex justify-between flex-row py-2 md:justify-center md:gap-8 mt-3 md:mt-6"
-        style={{
-          flexDirection: "row",
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-        }}
-      >
-        {categories.map((category) => (
-          <CategoryItem
-            key={category.id}
-            title={category.title}
-            icon={category.icon}
-            onClick={() => onCategoryClick(category.path)}
-          />
-        ))}
-      </View>
+      {isWide ? (
+        <View
+          className="w-full flex flex-row flex-wrap py-2 md:justify-center md:gap-6 mt-3 md:mt-6"
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
+          {categories.map((category) => (
+            <CategoryItem
+              key={category.id}
+              title={category.title}
+              icon={category.icon}
+              onClick={() => onCategoryClick(category.path)}
+            />
+          ))}
+        </View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="mt-3"
+          contentContainerStyle={{
+            flexDirection: "row",
+            alignItems: "flex-start",
+            paddingVertical: 8,
+            paddingRight: 12,
+          }}
+        >
+          {categories.map((category, index) => (
+            <View
+              key={category.id}
+              style={{
+                marginRight: index === categories.length - 1 ? 0 : 10,
+              }}
+            >
+              <CategoryItem
+                title={category.title}
+                icon={category.icon}
+                onClick={() => onCategoryClick(category.path)}
+              />
+            </View>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }

@@ -167,12 +167,30 @@ function Header() {
           </Text>
         </View>
 
-        <Text
-          className={`font-inter font-bold text-md ${setTitleHeader(pathname) !== "Home" ? "hidden" : "flex"} md:text-lg xl:hidden`}
+        <View
+          className={`flex-1 shrink min-w-0 mr-3 ${setTitleHeader(pathname) !== "Home" ? "hidden" : "flex"} xl:hidden`}
+          style={{ justifyContent: "center" }}
         >
-          Olá{"\n"}
-          <Text className="text-primary font-bold">{userName} !</Text>
-        </Text>
+          <Text
+            className="font-inter font-bold text-base md:text-lg text-primary-text"
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {userName?.trim() ? (
+              <>
+                Olá{" "}
+                <Text className="text-primary font-bold">
+                  {userName.trim()}
+                </Text>
+                !
+              </>
+            ) : (
+              <>
+                Olá<Text className="text-primary font-bold">!</Text>
+              </>
+            )}
+          </Text>
+        </View>
 
         <View className="flex flex-row gap-4 items-center">
           <View className="relative">

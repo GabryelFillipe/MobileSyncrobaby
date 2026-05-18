@@ -9,11 +9,14 @@ export function CarouselDots({ activeIndex, total }: CarouselDotsProps) {
   const dots = Array.from({ length: total });
 
   return (
-    <View className="flex gap-2 mt-2" style={{ flexDirection: "row" }}>
+    <View
+      className="flex-row gap-2 mt-2 w-full justify-center items-center"
+      accessibilityRole="progressbar"
+    >
       {dots.map((_, index) => (
         <View
           key={index}
-          className={`h-2 rounded-full transition-all duration-300 ${
+          className={`h-2 rounded-full ${
             activeIndex === index ? "w-4 bg-primary" : "w-2 bg-lilas-medium"
           }`}
         />

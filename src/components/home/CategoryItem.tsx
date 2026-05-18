@@ -6,14 +6,19 @@ interface CategoryItemProps {
   onClick: () => void;
 }
 
+const ITEM_MIN_WIDTH = 72;
+
 export function CategoryItem({ title, icon, onClick }: CategoryItemProps) {
   const IsSvgComponent = typeof icon === "function";
   const SvgIcon = IsSvgComponent ? icon : null;
 
   return (
-    <View className="w-10 h-10 md:h-14 md:w-14 flex items-center justify-center flex-col">
+    <View
+      className="items-center justify-start"
+      style={{ minWidth: ITEM_MIN_WIDTH, maxWidth: 88 }}
+    >
       <Pressable
-        className="bg-primary flex flex-col items-center justify-center rounded-sm cursor-pointer w-10 h-10 md:w-14 md:h-14 hover:opacity-90 transition-opacity"
+        className="bg-primary flex items-center justify-center rounded-sm w-10 h-10 md:w-14 md:h-14 cursor-pointer hover:opacity-90 transition-opacity"
         onPress={onClick}
       >
         {IsSvgComponent && SvgIcon ? (
@@ -26,7 +31,11 @@ export function CategoryItem({ title, icon, onClick }: CategoryItemProps) {
           />
         )}
       </Pressable>
-      <Text className="text-[10px] md:text-sm font-bold font-nunito text-primary-text mt-1 text-center">
+      <Text
+        className="text-[10px] md:text-sm font-bold font-nunito text-primary-text mt-1 text-center w-full px-0.5"
+        numberOfLines={2}
+        ellipsizeMode="tail"
+      >
         {title}
       </Text>
     </View>
