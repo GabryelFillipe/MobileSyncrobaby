@@ -218,7 +218,7 @@ export default function Home() {
       <CarouselDots activeIndex={activeIndex} total={articlesData.length} />
 
       <View className="w-full flex flex-col grow justify-evenly gap-6 md:gap-12 xl:gap-6 px-6 xl:px-0">
-        <View className="xl:hidden flex items-center justify-center w-full h-20">
+        <View className="xl:hidden flex items-center justify-center w-full mt-4">
           <CategorySection
             categories={categoriesData}
             onCategoryClick={handleCategoryNavigation}

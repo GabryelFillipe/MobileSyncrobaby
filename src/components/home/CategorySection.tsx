@@ -21,7 +21,7 @@ export function CategorySection({
   const isWide = width >= 768;
 
   return (
-    <View className="w-full flex flex-col gap-2 md:gap-6 justify-center">
+    <View className="w-full flex flex-col gap-0 md:gap-6 justify-center">
       <Text className="text-xl md:text-2xl font-bold font-poppins text-primary-text">
         Categorias
       </Text>
@@ -33,7 +33,7 @@ export function CategorySection({
             flexDirection: "row",
             alignItems: "flex-start",
             justifyContent: "center",
-            gap: 12,
+            gap: 10,
           }}
         >
           {categories.map((category) => (

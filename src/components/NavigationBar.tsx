@@ -15,14 +15,8 @@ import Profile from "../assets/navigation/profileHeader.svg";
 
 import type { IconsNavigation } from "../../app/(app)/_layout";
 
-/** Altura aproximada da “pílula” da barra (h-20 + margens). Use no padding do conteúdo rolável. */
 export const MOBILE_TAB_BAR_CONTENT_HEIGHT = 88;
 
-/**
- * Espaço vertical que a barra inferior ocupa quando largura é menor que 1280px (tab bar).
- * Sidebar em `xl:` não cobre o rodapé do conteúdo — neste caso retorna 0.
- * Use em `paddingBottom` do recipiente que envolve cada tela ou do `ScrollView` principal.
- */
 export function useTabBarOccupiedSpace(): number {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -34,7 +28,6 @@ export function useTabBarOccupiedSpace(): number {
     Platform.OS === "android" ? 12 : Platform.OS === "ios" ? 8 : 0,
   );
 
-  // mb-2 da pílula + HOME indicator / navegação por gestos
   return MOBILE_TAB_BAR_CONTENT_HEIGHT + safeBottom + 8;
 }
 
@@ -48,7 +41,6 @@ function NavigationBar({ listIcons }: Props) {
   const isDesktop = width >= 1280;
   const insets = useSafeAreaInsets();
 
-  /** Espaço a reservar no fundo das telas (barra flutuante + home indicator Android/iOS). */
   const bottomInset = isDesktop
     ? 0
     : Math.max(insets.bottom, Platform.OS === "android" ? 8 : 0);
@@ -161,12 +153,16 @@ function NavigationBar({ listIcons }: Props) {
           <Text className="xl:text-dark-purple xl:text-[22px] xl:font-semibold">
             Categoria
           </Text>
-          {listIcons.slice(4, 11).map((icon) => (
+          {listIcons.slice(0, 4).map((icon) => (
             <Link key={icon.id} href={icon.path as any} asChild>
-              <Pressable className="xl:w-auto xl:h-9 xl:rounded-lg xl:hover:bg-white/20 xl:hover:scale-103 xl:transition xl:duration-200">
+              <Pressable
+                className="relative isolate justify-center items-center min-w-[56px] min-h-[56px]
+                xl:w-auto xl:h-9 xl:rounded-lg xl:hover:bg-white/20 xl:hover:scale-103 xl:transition xl:duration-200"
+              >
                 <View
-                  className={`xl:flex xl:flex-row xl:w-full xl:h-full xl:gap-4 xl:items-center xl:rounded-lg xl:p-2
-                  ${pathname === icon.path ? "xl:bg-white/40" : ""}`}
+                  className={`flex flex-col items-center gap-1 z-60 py-1
+                  xl:flex-row xl:w-full xl:h-full xl:gap-4 xl:rounded-lg xl:p-2
+                  ${pathname === icon.path && isDesktop ? "xl:bg-white/40" : ""}`}
                 >
                   {renderIcon(icon.icon, {
                     "aria-hidden": "true",
