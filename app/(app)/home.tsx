@@ -184,40 +184,43 @@ export default function Home() {
   };
 
   return (
-    <View className="w-full flex flex-col h-full items-center z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-4 relative">
-      <ScrollView
-        ref={carouselRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        pagingEnabled
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        onLayout={handleLayout}
-        className="w-full flex flex-row"
-        contentContainerStyle={{
-          justifyContent: "flex-start",
-        }}
-      >
-        {articlesData.map((article) => (
-          <View
-            key={article.id}
-            style={{ width: carouselWidth }}
-            className="px-6"
-          >
-            <CarouselCard
-              id={article.id}
-              textPre={article.textPre}
-              textHighlight={article.textHighlight}
-              description={article.description}
-              img={require("../../src/assets/images/artigoImg.png")}
-            />
-          </View>
-        ))}
-      </ScrollView>
+    <View className="w-full flex flex-col h-full z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-4 relative">
+      <View className="w-full flex flex-col mb-4 mt-6">
+        <ScrollView
+          ref={carouselRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          onLayout={handleLayout}
+          className="w-full flex flex-row"
+          contentContainerStyle={{
+            justifyContent: "flex-start",
+          }}
+        >
+          {articlesData.map((article) => (
+            <View
+              key={article.id}
+              style={{ width: carouselWidth }}
+              className="px-6"
+            >
+              <CarouselCard
+                id={article.id}
+                textPre={article.textPre}
+                textHighlight={article.textHighlight}
+                description={article.description}
+                img={require("../../src/assets/images/artigoImg.png")}
+              />
+            </View>
+          ))}
+        </ScrollView>
+        <View className="mt-4">
+          <CarouselDots activeIndex={activeIndex} total={articlesData.length} />
+        </View>
+      </View>
 
-      <CarouselDots activeIndex={activeIndex} total={articlesData.length} />
-
-      <View className="w-full flex flex-col grow justify-evenly gap-6 md:gap-12 xl:gap-6 px-6 xl:px-0">
+      <View className="w-full flex flex-col grow justify-evenly md:gap-12 px-6 xl:px-0">
         <View className="xl:hidden flex items-center justify-center w-full mt-4">
           <CategorySection
             categories={categoriesData}
@@ -225,7 +228,7 @@ export default function Home() {
           />
         </View>
 
-        <View className="flex text-start flex-col gap-2 mt-10 md:mb-24 md:gap-6">
+        <View className="flex text-start flex-col gap-2 md:mb-24 md:gap-6">
           <View className="flex flex-row justify-between items-end xl:px-0">
             <Pressable onPress={() => console.log(listChildren)}>
               <Text className="text-xl md:text-2xl font-bold font-poppins text-primary-text xl:text-2xl w-full">
