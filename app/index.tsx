@@ -12,6 +12,9 @@ export default function HomeScreen() {
         <Link href="/home" className="mt-4 text-2xl text-blue-500">
           Ir para o home
         </Link>
+        <Link href="/addProfessional" className="mt-4 text-2xl text-green-500">
+          Ir para o addProfessional
+        </Link>
       </View>
     </SafeAreaView>
   );

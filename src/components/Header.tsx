@@ -80,7 +80,7 @@ function Header() {
     if (path === "/articles") return "Dicas";
     if (path === "/add-child") return "Adicionar Filho(a)";
     if (path.includes("/article/")) return "Artigo";
-    if (path === "/edit-pediatrician") return "Editar Profissional";
+    if (path === "/addProfessional") return "Editar Profissional";
     if (path === "/add-illness") return "Adicionar Enfermidade";
     if (path === "/measures") return "Medidas";
     if (path === "/update-measures") return "Atualizar medidas";
@@ -127,7 +127,7 @@ function Header() {
 
   return (
     <View
-      className={`fixed top-0 flex flex-col justify-between items-center w-screen px-6 pt-6 z-90 bg-light ${setTitleHeader(pathname) !== "Home" ? "h-24" : "h-32"} md:px-14 xl:h-24 xl:flex-row xl:px-20 xl:pt-8 xl:items-start xl:right-0 ${pathname === "/profile-children" || pathname === "/profile-user" ? "xl:w-[80%]" : "xl:w-[85%] xl:max-w-[calc(100%-200px)]"}`}
+      className={` top-0 flex flex-col justify-between  mb-12 max-h-10 items-center w-screen px-6 pt-4 z-90 bg-light ${setTitleHeader(pathname) !== "Home" ? "h-24" : "h-32"} md:px-14 xl:h-24 xl:flex-row xl:px-20 xl:pt-8 xl:items-start xl:right-0 ${pathname === "/profile-children" || pathname === "/profile-user" ? "xl:w-[80%]" : "xl:w-[85%] xl:max-w-[calc(100%-200px)]"}`}
     >
       <Pressable
         onPress={moveNoticationsBar}
