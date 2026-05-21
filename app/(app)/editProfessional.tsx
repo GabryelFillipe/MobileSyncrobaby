@@ -1,13 +1,10 @@
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import BtnPrimary from "../../src/components/BtnPrimary";
 import { InputDefault } from "../../src/components/InputDefault";
-
-import SetSelector from "../../src/assets/icons/setExpandSelector.svg";
-
 import {
   buttonCancel,
   buttonSubmit,
@@ -15,6 +12,8 @@ import {
   labelClassName,
   labelRadioButton,
 } from "../../src/style/globalStyles";
+
+import SetSelectorIcon from "../../src/assets/icons/setExpandSelector.svg";
 
 interface PediatricianData {
   name: string;
@@ -31,21 +30,43 @@ const MOCK_SPECIALTIES = [
   { id_specialization: 3, specialization_name: "Neuropediatria" },
 ];
 
-export default function AddProfessional() {
-  const navigation = useNavigation();
-  const childId = 1;
+const MOCK_PROFESSIONAL = {
+  id_professional: 1,
+  professional_name: "Dr. Henrique Cavalcante",
+  specialty: "Odontopediatria",
+  address: "Av. das Orquídeas, 450",
+  phone: "(11) 4002-8922",
+  last_consultation: "2026-03-15T00:00:00.000Z",
+  description: "Acompanhamento semestral de rotina.",
+  fk_id_specialization: 2,
+};
+
+export default function EditProfessional() {
+  const router = useRouter();
+
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [professionExpand, setProfessionExpand] = useState<boolean>(false);
+  const [professionLabel, setProfessionLabel] = useState<string>(
+    MOCK_PROFESSIONAL.specialty || "Selecione a profissão...",
+  );
 
   const {
     control,
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<PediatricianData>();
-
-  const [professionExpand, setProfessionExpand] = useState<boolean>(false);
-  const [professionLabel, setProfessionLabel] = useState<string>(
-    "Selecione a profissão...",
-  );
+  } = useForm<PediatricianData>({
+    defaultValues: {
+      name: MOCK_PROFESSIONAL.professional_name || "",
+      profession: MOCK_PROFESSIONAL.specialty || "",
+      address: MOCK_PROFESSIONAL.address || "",
+      phone: MOCK_PROFESSIONAL.phone || "",
+      last_appointment_date: MOCK_PROFESSIONAL.last_consultation
+        ? MOCK_PROFESSIONAL.last_consultation.split("T")[0]
+        : "",
+      description: MOCK_PROFESSIONAL.description || "",
+    },
+  });
 
   function sendDatas(data: PediatricianData) {
     const selectedSpecialty = MOCK_SPECIALTIES.find(
@@ -53,24 +74,25 @@ export default function AddProfessional() {
     );
     const specialtyId = selectedSpecialty
       ? selectedSpecialty.id_specialization
-      : 1;
+      : MOCK_PROFESSIONAL.fk_id_specialization;
 
     const payload = {
       professional_name: data.name,
       phone: data.phone,
       last_consultation: data.last_appointment_date,
       address: data.address,
-      fk_id_child: childId,
+      fk_id_child: 1,
       fk_id_specialization: specialtyId,
+      description: data.description,
     };
 
-    console.log("Dados prontos para envio:", payload);
-    navigation.goBack();
+    console.log("Dados prontos para edição:", payload);
+    setIsEditing(false);
   }
 
   return (
-    <View className="flex-1 w-full z-10 bg-light">
-      <View className="flex flex-col gap-0 w-full justify-between h-full px-4 py-2 mt-2">
+    <ScrollView className="flex-1 w-full z-10 bg-white">
+      <View className="flex flex-col w-full justify-between h-full px-4 py-2 mt-2">
         <View className="flex flex-col mb-4">
           <Text className={labelClassName}>Nome</Text>
           <Controller
@@ -79,15 +101,16 @@ export default function AddProfessional() {
             rules={{ required: "O nome é obrigatório!" }}
             render={({ field: { onChange, onBlur, value } }) => (
               <InputDefault
-                placeholder="Dr. Henrique Cavalcante"
-                className={inputClassName}
+                placeholder="Ex: Dr. Henrique"
+                className={`${inputClassName} ${!isEditing ? "opacity-70 bg-gray-100" : "bg-white"}`}
+                editable={isEditing}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
               />
             )}
           />
-          {errors.name && (
+          {errors.name && isEditing && (
             <Text className="text-red-600 text-sm mt-1">
               {errors.name.message}
             </Text>
@@ -98,21 +121,23 @@ export default function AddProfessional() {
           <Text className={labelClassName}>Profissão</Text>
           <TouchableOpacity
             activeOpacity={0.8}
-            className={`flex-row justify-between items-center z-50 p-3 bg-white border border-gray-300 rounded-md ${inputClassName}`}
+            disabled={!isEditing}
+            className={`flex-row justify-between items-center z-50 p-3 border border-gray-300 rounded-md ${
+              !isEditing ? "opacity-70 bg-gray-100" : "bg-white"
+            } ${inputClassName}`}
             onPress={() => setProfessionExpand(!professionExpand)}
           >
             <Text className="text-black">{professionLabel}</Text>
-            <SetSelector
+            <SetSelectorIcon
               width={24}
               height={24}
               style={
                 professionExpand ? { transform: [{ rotate: "180deg" }] } : {}
               }
-              className={`${professionExpand ? "rotate-180" : ""}`}
             />
           </TouchableOpacity>
 
-          {professionExpand && (
+          {professionExpand && isEditing && (
             <View className="absolute top-16 w-full rounded-b-lg border-b border-l border-r border-gray-300 bg-white z-40 py-2 shadow-sm">
               {MOCK_SPECIALTIES.map((spec) => (
                 <TouchableOpacity
@@ -133,14 +158,13 @@ export default function AddProfessional() {
               ))}
             </View>
           )}
-          {errors.profession && (
+          {errors.profession && isEditing && (
             <Text className="text-red-600 text-sm mt-1">
               {errors.profession.message}
             </Text>
           )}
         </View>
 
-        {/* Campo Endereço */}
         <View className="flex flex-col mb-4">
           <Text className={labelClassName}>Endereço</Text>
           <Controller
@@ -149,22 +173,22 @@ export default function AddProfessional() {
             rules={{ required: "O endereço é obrigatório!" }}
             render={({ field: { onChange, onBlur, value } }) => (
               <InputDefault
-                placeholder="Av. das Orquídeas, 450"
-                className={inputClassName}
+                placeholder="Ex: Av. das Orquídeas, 450"
+                className={`${inputClassName} ${!isEditing ? "opacity-70 bg-gray-100" : "bg-white"}`}
+                editable={isEditing}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
               />
             )}
           />
-          {errors.address && (
+          {errors.address && isEditing && (
             <Text className="text-red-600 text-sm mt-1">
               {errors.address.message}
             </Text>
           )}
         </View>
 
-        {/* Campo Data da última consulta */}
         <View className="flex flex-col mb-4">
           <Text className={labelClassName}>Data da última consulta</Text>
           <Controller
@@ -173,22 +197,22 @@ export default function AddProfessional() {
             rules={{ required: "A data da última consulta é obrigatória!" }}
             render={({ field: { onChange, onBlur, value } }) => (
               <InputDefault
-                placeholder="DD/MM/AAAA"
-                className={inputClassName}
+                placeholder="AAAA-MM-DD"
+                className={`${inputClassName} ${!isEditing ? "opacity-70 bg-gray-100" : "bg-white"}`}
+                editable={isEditing}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
               />
             )}
           />
-          {errors.last_appointment_date && (
+          {errors.last_appointment_date && isEditing && (
             <Text className="text-red-600 text-sm mt-1">
               {errors.last_appointment_date.message}
             </Text>
           )}
         </View>
 
-        {/* Campo Telefone */}
         <View className="flex flex-col mb-4">
           <Text className={labelClassName}>Número de telefone</Text>
           <Controller
@@ -199,21 +223,21 @@ export default function AddProfessional() {
               <InputDefault
                 placeholder="(11) 4002-8922"
                 keyboardType="phone-pad"
-                className={inputClassName}
+                className={`${inputClassName} ${!isEditing ? "opacity-70 bg-gray-100" : "bg-white"}`}
+                editable={isEditing}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
               />
             )}
           />
-          {errors.phone && (
+          {errors.phone && isEditing && (
             <Text className="text-red-600 text-sm mt-1">
               {errors.phone.message}
             </Text>
           )}
         </View>
 
-        {/* Campo Descrição */}
         <View className="flex flex-col mb-6">
           <Text className={labelClassName}>Descrição</Text>
           <Controller
@@ -224,8 +248,11 @@ export default function AddProfessional() {
                 multiline
                 numberOfLines={4}
                 placeholder="Consultamos para tratar de doenças e etc..."
-                className="h-32 p-2 mt-1 border border-gray-300 rounded-lg text-lg bg-white"
+                className={`h-32 p-2 mt-1 border border-primary-dark rounded-lg text-lg ${
+                  !isEditing ? "opacity-70 bg-white" : "bg-white"
+                }`}
                 style={{ textAlignVertical: "top" }}
+                editable={isEditing}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
@@ -234,21 +261,24 @@ export default function AddProfessional() {
           />
         </View>
 
-        {/* Botões */}
         <View className="flex-row justify-between w-full h-12 mb-10">
           <BtnPrimary
-            text="Cancelar"
+            text="Voltar"
             className={`flex-1 mr-2 items-center justify-center bg-gray-300 ${buttonCancel}`}
-            onPress={() => navigation.goBack()}
+            textClassName=" font-bold"
+            onPress={() => router.back()}
           />
 
           <BtnPrimary
-            text="Registrar"
+            text={isEditing ? "Registrar edição" : "Editar"}
             className={`flex-1 ml-2 items-center justify-center bg-purple-600 ${buttonSubmit}`}
-            onPress={handleSubmit(sendDatas)}
+            textClassName="text-white font-bold"
+            onPress={
+              isEditing ? handleSubmit(sendDatas) : () => setIsEditing(true)
+            }
           />
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }

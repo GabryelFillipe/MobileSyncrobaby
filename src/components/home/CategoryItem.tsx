@@ -6,7 +6,7 @@ interface CategoryItemProps {
   onClick: () => void;
 }
 
-const ITEM_MIN_WIDTH = 30;
+const ITEM_MIN_WIDTH = 36;
 
 export function CategoryItem({ title, icon, onClick }: CategoryItemProps) {
   const IsSvgComponent = typeof icon === "function";
@@ -14,11 +14,11 @@ export function CategoryItem({ title, icon, onClick }: CategoryItemProps) {
 
   return (
     <View
-      className="items-center justify-start"
-      style={{ minWidth: ITEM_MIN_WIDTH, maxWidth: 88 }}
+      className="items-center justify-start "
+      style={{ minWidth: ITEM_MIN_WIDTH, maxWidth: 80 }}
     >
       <Pressable
-        className="bg-primary flex items-center justify-center rounded-xl w-12 h-12 md:w-14 md:h-14 cursor-pointer hover:opacity-90 transition-opacity"
+        className="bg-primary flex items-center justify-center rounded-lg w-10 h-10 md:w-14 md:h-14 cursor-pointer hover:opacity-90 transition-opacity"
         onPress={onClick}
       >
         {IsSvgComponent && SvgIcon ? (

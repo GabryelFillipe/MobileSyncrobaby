@@ -33,7 +33,6 @@ export function CategorySection({
             flexDirection: "row",
             alignItems: "flex-start",
             justifyContent: "center",
-            gap: 10,
           }}
         >
           {categories.map((category) => (
@@ -54,14 +53,14 @@ export function CategorySection({
             flexDirection: "row",
             alignItems: "flex-start",
             paddingVertical: 8,
-            paddingRight: 12,
+            paddingRight: 0,
           }}
         >
           {categories.map((category, index) => (
             <View
               key={category.id}
               style={{
-                marginRight: index === categories.length - 1 ? 0 : 10,
+                marginRight: index === categories.length - 1 ? 0 : 8,
               }}
             >
               <CategoryItem

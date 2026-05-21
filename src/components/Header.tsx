@@ -11,7 +11,7 @@ import {
 
 import NotificationsPage from "../../app/(app)/notifications";
 import { InputDefault } from "../components/InputDefault";
-// import DateUtils from "../utils/Date";
+import DateUtils from "../utils/Date";
 
 import Notifications from "../assets/icons/notifications.svg";
 import Search from "../assets/icons/search.svg";
@@ -27,7 +27,7 @@ export interface Notification {
 }
 
 function Header() {
-  //   const [DateHour, setDateHour] = useState<string>(DateUtils.getDateFormated());
+  const [DateHour, setDateHour] = useState<string>(DateUtils.getHourFormated());
   const [userName, setUserName] = useState<string>("");
   const [notifications, setNotifications] = useState<Notification[]>([
     {
@@ -80,7 +80,8 @@ function Header() {
     if (path === "/articles") return "Dicas";
     if (path === "/add-child") return "Adicionar Filho(a)";
     if (path.includes("/article/")) return "Artigo";
-    if (path === "/addProfessional") return "Editar Profissional";
+    if (path === "/addProfessional") return "Adicionar Profissional";
+    if (path === "/editProfessional") return "Editar Profissional";
     if (path === "/add-illness") return "Adicionar Enfermidade";
     if (path === "/measures") return "Medidas";
     if (path === "/update-measures") return "Atualizar medidas";
@@ -103,11 +104,11 @@ function Header() {
     };
     fetchUser();
 
-    // const handleTime = setInterval(() => {
-    //   setDateHour(DateUtils.getDateFormated());
-    // }, 60000);
+    const handleTime = setInterval(() => {
+      setDateHour(DateUtils.getHourFormated());
+    }, 60000);
 
-    // return () => clearInterval(handleTime);
+    return () => clearInterval(handleTime);
   }, []);
 
   const renderIcon = (iconSource: any, props: any) => {
@@ -127,7 +128,7 @@ function Header() {
 
   return (
     <View
-      className={` top-0 flex flex-col justify-between  mb-12 max-h-10 items-center w-screen px-6 pt-4 z-90 bg-light ${setTitleHeader(pathname) !== "Home" ? "h-24" : "h-32"} md:px-14 xl:h-24 xl:flex-row xl:px-20 xl:pt-8 xl:items-start xl:right-0 ${pathname === "/profile-children" || pathname === "/profile-user" ? "xl:w-[80%]" : "xl:w-[85%] xl:max-w-[calc(100%-200px)]"}`}
+      className={` top-0 flex flex-col justify-between  mb-16 max-h-10 items-center w-screen px-6 pt-8 z-90 bg-light ${setTitleHeader(pathname) !== "Home" ? "h-24" : "h-32"} md:px-14 xl:h-24 xl:flex-row xl:px-20 xl:pt-8 xl:items-start xl:right-0 ${pathname === "/profile-children" || pathname === "/profile-user" ? "xl:w-[80%]" : "xl:w-[85%] xl:max-w-[calc(100%-200px)]"}`}
     >
       <Pressable
         onPress={moveNoticationsBar}
@@ -150,7 +151,7 @@ function Header() {
 
       <View className="flex flex-row w-full justify-between items-center mt-4 xl:justify-end xl:gap-16 xl:h-11 xl:mt-0">
         <Text className="hidden xl:flex xl:font-nunito xl:text-black/50 xl:font-bold">
-          12:00
+          {DateHour}
         </Text>
 
         <View
@@ -168,7 +169,7 @@ function Header() {
         </View>
 
         <View
-          className={`flex-1 shrink min-w-0 mr-3 ${setTitleHeader(pathname) !== "Home" ? "hidden" : "flex"} xl:hidden`}
+          className={`flex-1 shrink min-w-0 mr-3 mt-4 ${setTitleHeader(pathname) !== "Home" ? "hidden" : "flex"} xl:hidden`}
           style={{ justifyContent: "center" }}
         >
           <Text
@@ -192,7 +193,7 @@ function Header() {
           </Text>
         </View>
 
-        <View className="flex flex-row gap-4 items-center">
+        <View className="flex flex-row gap-4 mt-8 items-center">
           <View className="relative">
             <Pressable
               onPress={moveNoticationsBar}
@@ -212,7 +213,7 @@ function Header() {
             </Pressable>
           </View>
 
-          <Link href="/" asChild>
+          <Link href="/profileUser" asChild>
             <Pressable
               className={`w-7 h-7 -mt-px md:h-8 md:w-8 md:mt-0 xl:hidden ${pathname === "/profile-children" || pathname === "/profile-user" ? "hidden" : "flex"}`}
             >

@@ -4,11 +4,13 @@ import { Text, TouchableOpacity, TouchableOpacityProps } from "react-native";
 interface PropsBtnPrimary extends TouchableOpacityProps {
   text: string;
   className?: string;
+  textClassName?: string;
 }
 
-export function BtnPrimary({
+export default function BtnPrimary({
   text,
   className = "",
+  textClassName = "",
   ...props
 }: PropsBtnPrimary) {
   return (
@@ -17,9 +19,7 @@ export function BtnPrimary({
       className={`rounded-sm py-2 px-3 ${className}`}
       {...props}
     >
-      <Text className="font-poppins">{text}</Text>
+      <Text className={`font-poppins ${textClassName}`}>{text}</Text>
     </TouchableOpacity>
   );
 }
-
-export default BtnPrimary;
