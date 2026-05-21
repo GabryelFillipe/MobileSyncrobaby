@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -18,13 +18,13 @@ import { CarouselCard } from "../../src/components/CarouselCard";
 import { CarouselDots } from "../../src/components/CarouselDots";
 import { CategorySection } from "../../src/components/home/CategorySection";
 
-import childrenPhoto from "../../src/assets/icons/childrenPhoto.svg";
+import ChildrenPhoto from "../../src/assets/icons/childrenPhoto.svg";
 import DiaryIcon from "../../src/assets/icons/diaryIcon.svg";
-import healthIcon from "../../src/assets/icons/healthIcon.svg";
-import manageChildIcon from "../../src/assets/icons/manageChildIcon.svg";
+import HealthIcon from "../../src/assets/icons/healthIcon.svg";
+import ManageChildIcon from "../../src/assets/icons/manageChildIcon.svg";
 import MeasurementsIcon from "../../src/assets/icons/measurementsIcon.svg";
 import PediatricianIcon from "../../src/assets/icons/pediatricianIcon.svg";
-import plusIcon from "../../src/assets/icons/plusIcon.svg";
+import PlusIcon from "../../src/assets/icons/plusIcon.svg";
 import RoutinesIcon from "../../src/assets/icons/routinesIcon.svg";
 import StorageIcon from "../../src/assets/icons/storageIcon.svg";
 
@@ -87,11 +87,11 @@ const categoriesData: any[] = [
   { id: 4, title: "Diário", icon: DiaryIcon, path: "Diary" },
   { id: 5, title: "Medidas", icon: MeasurementsIcon, path: "Measures" },
   { id: 6, title: "Pediatra", icon: PediatricianIcon, path: "Pediatrician" },
-  { id: 7, title: "Saúde", icon: healthIcon, path: "Health" },
+  { id: 7, title: "Saúde", icon: HealthIcon, path: "Health" },
 ];
 
 export default function Home() {
-  const navigation = useNavigation<any>();
+  const router = useRouter();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1280;
 
@@ -99,9 +99,10 @@ export default function Home() {
 
   const handleCategoryNavigation = (path: string) => {
     if (path && path !== "") {
-      navigation.navigate(path);
+      const formattedPath = `/${path.toLowerCase()}`;
+      router.push(formattedPath as any);
     } else {
-      navigation.navigate("NotFound");
+      router.push("/");
     }
   };
 
@@ -168,23 +169,8 @@ export default function Home() {
     setActiveIndex(currentIndex);
   };
 
-  const renderIcon = (iconSource: any, props: any) => {
-    if (typeof iconSource === "function") {
-      const SvgIcon = iconSource;
-      return <SvgIcon {...props} />;
-    }
-    return (
-      <Image
-        source={
-          typeof iconSource === "string" ? { uri: iconSource } : iconSource
-        }
-        {...props}
-      />
-    );
-  };
-
   return (
-    <View className="w-full flex flex-col h-full z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-4 relative">
+    <View className="w-full flex flex-col  z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-6 relative">
       <View className="w-full flex flex-col mb-4 mt-6">
         <ScrollView
           ref={carouselRef}
@@ -197,6 +183,7 @@ export default function Home() {
           className="w-full flex flex-row"
           contentContainerStyle={{
             justifyContent: "flex-start",
+            flexGrow: 1,
           }}
         >
           {articlesData.map((article) => (
@@ -228,7 +215,7 @@ export default function Home() {
           />
         </View>
 
-        <View className="flex text-start flex-col gap-2 md:mb-24 md:gap-6">
+        <View className="flex text-start flex-col mt-10 gap-2 md:mb-24 md:gap-6">
           <View className="flex flex-row justify-between items-end xl:px-0">
             <Pressable onPress={() => console.log(listChildren)}>
               <Text className="text-xl md:text-2xl font-bold font-poppins text-primary-text xl:text-2xl w-full">
@@ -247,35 +234,28 @@ export default function Home() {
 
           <View className="w-full bg-lilas xl:bg-transparent shadow-purple-md xl:shadow-none flex flex-col xl:flex-row gap-3 xl:gap-8 px-6 md:px-8 xl:px-0 pt-3 md:pt-4 xl:pt-0 pb-8 md:pb-10 xl:pb-0 rounded-md">
             <View className="w-full flex flex-row justify-between xl:hidden">
-              <Pressable onPress={() => navigation.navigate("AddChild")}>
-                {renderIcon(plusIcon, {
-                  alt: "Icone de adicionar filho",
-                  className: "md:w-8 md:h-8 w-6 h-6",
-                })}
+              <Pressable onPress={() => router.push("/")}>
+                {/* /addChild */}
+                <PlusIcon width={24} height={24} />
               </Pressable>
               <Pressable onPress={() => setIsModalOpen(true)}>
-                {renderIcon(manageChildIcon, {
-                  alt: "Icone para acessar o perfil do filho",
-                  className: "md:w-8 md:h-8 w-6 h-6",
-                })}
+                <ManageChildIcon width={24} height={24} />
               </Pressable>
             </View>
 
             <Pressable
-              onPress={() => navigation.navigate("ProfileChildren")}
+              onPress={() => router.push("/")} // /addChild
               className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col hover:opacity-90 transition-all"
             >
               <View className="flex flex-row gap-4 md:gap-6 items-center w-full">
                 <View className="bg-lilas rounded-full p-1 xl:p-0 xl:bg-transparent">
-                  {renderIcon(
-                    selectedChild?.photo && selectedChild.photo !== ""
-                      ? { uri: selectedChild.photo }
-                      : childrenPhoto,
-                    {
-                      alt: `Foto de ${selectedChild?.child_name}`,
-                      className:
-                        "w-11 h-11 md:w-14 md:h-14 xl:w-12 xl:h-12 rounded-full",
-                    },
+                  {selectedChild?.photo && selectedChild.photo !== "" ? (
+                    <Image
+                      source={{ uri: selectedChild.photo }}
+                      className="w-11 h-11 md:w-14 md:h-14 xl:w-12 xl:h-12 rounded-full"
+                    />
+                  ) : (
+                    <ChildrenPhoto width={44} height={44} />
                   )}
                 </View>
                 <View className="flex flex-col justify-center flex-1">
@@ -325,7 +305,7 @@ export default function Home() {
             </Pressable>
 
             <Pressable
-              onPress={() => navigation.navigate("AddChild")}
+              onPress={() => router.push("/")} // addChild
               className="hidden xl:flex w-full xl:w-50 border-2 border-dashed border-primary/40 bg-lilas/20 rounded-xl flex-col items-center justify-center gap-3 hover:bg-lilas/40 transition-colors py-4"
             >
               <View className="w-12 h-12 bg-light rounded-full flex items-center justify-center shadow-sm">
@@ -390,14 +370,13 @@ export default function Home() {
                   }}
                   className="w-full bg-light border border-lilas md:py-3 py-2 px-4 rounded-xl flex flex-row items-center gap-4"
                 >
-                  {renderIcon(
-                    child.photo && child.photo !== ""
-                      ? { uri: child.photo }
-                      : childrenPhoto,
-                    {
-                      alt: `Foto de ${child.child_name}`,
-                      className: "w-11 h-11 md:w-12 md:h-12 rounded-full",
-                    },
+                  {child.photo && child.photo !== "" ? (
+                    <Image
+                      source={{ uri: child.photo }}
+                      className="w-11 h-11 md:w-12 md:h-12 rounded-full"
+                    />
+                  ) : (
+                    <ChildrenPhoto width={44} height={44} />
                   )}
                   <View className="flex flex-col">
                     <Text className="font-poppins font-bold text-primary-text text-sm md:text-base leading-tight">
