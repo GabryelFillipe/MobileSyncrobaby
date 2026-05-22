@@ -84,7 +84,7 @@ function Header() {
     if (path === "/editProfessional") return "Editar Profissional";
     if (path === "/add-illness") return "Adicionar Enfermidade";
     if (path === "/measures") return "Medidas";
-    if (path === "/update-measures") return "Atualizar medidas";
+    if (path === "/updateMeasure") return "Atualizar medidas";
     if (path === "/profile-user") return "Perfil";
     if (path.includes("/edit-illness/")) return "Editar enfermidade";
     if (path === "/diary") return "Diário";

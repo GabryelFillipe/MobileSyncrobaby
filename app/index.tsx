@@ -1,13 +1,32 @@
 import Constants from "expo-constants";
-import { useRouter } from "expo-router";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-
+import { Redirect, useRouter } from "expo-router";
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Logo from "../src/assets/icons/logoIcon.svg";
+import { useAuth } from "../src/context/AuthContext";
 
 const statusBarHeight = Constants.statusBarHeight;
 
 export default function ScreenWelcome() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Redirect href="/(app)/home" />;
+  }
 
   return (
     <ScrollView
@@ -17,7 +36,7 @@ export default function ScreenWelcome() {
     >
       <View
         className="bg-white flex-1 w-full flex-col justify-between pb-10"
-        style={{ paddingTop: statusBarHeight + 0 }}
+        style={{ paddingTop: statusBarHeight }}
       >
         <View className="bg-lilas w-full h-1/3 relative px-4">
           <View className="w-full flex-col mt-4 ">
@@ -40,7 +59,7 @@ export default function ScreenWelcome() {
           <TouchableOpacity
             activeOpacity={0.7}
             className="bg-lilas border border-transparent w-full items-center h-14 justify-center rounded-xl"
-            onPress={() => router.replace("/home")}
+            onPress={() => router.replace("/(auth)/login")}
           >
             <Text className="text-primary-text font-bold text-2xl">Entre</Text>
           </TouchableOpacity>
