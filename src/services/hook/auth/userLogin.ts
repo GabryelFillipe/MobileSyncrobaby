@@ -26,7 +26,13 @@ export const useLogin = () => {
       await AsyncStorage.setItem("user_email", email);
       await AsyncStorage.setItem("user_photo", picture);
 
-      signIn();
+      signIn({
+        id: id_guardian,
+        name: user_name,
+        email: email,
+        photo: picture,
+      });
+
       router.replace("/home");
     },
 

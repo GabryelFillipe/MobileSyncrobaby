@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, usePathname, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -11,6 +10,7 @@ import {
 
 import NotificationsPage from "../../app/(app)/notifications";
 import { InputDefault } from "../components/InputDefault";
+import { useAuth } from "../context/AuthContext";
 import DateUtils from "../utils/Date";
 
 import Notifications from "../assets/icons/notifications.svg";
@@ -27,8 +27,10 @@ export interface Notification {
 }
 
 function Header() {
+  const { user } = useAuth();
+  const userName = user?.name || "";
+
   const [DateHour, setDateHour] = useState<string>(DateUtils.getHourFormated());
-  const [userName, setUserName] = useState<string>("");
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: 1,
@@ -88,8 +90,8 @@ function Header() {
     if (path === "/profile-user") return "Perfil";
     if (path.includes("/edit-illness/")) return "Editar enfermidade";
     if (path === "/diary") return "Diário";
-    if (path.includes("/anotation-diary/")) return "Anotação";
-    if (path === "/new-anotation") return "Nova lembrança";
+    if (path.includes("/anotationDiary/")) return "Anotação";
+    if (path === "/newAnotation") return "Nova lembrança";
     return "";
   }
 
@@ -98,12 +100,6 @@ function Header() {
   }, [width]);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const name = await AsyncStorage.getItem("user_name");
-      if (name) setUserName(name);
-    };
-    fetchUser();
-
     const handleTime = setInterval(() => {
       setDateHour(DateUtils.getHourFormated());
     }, 60000);

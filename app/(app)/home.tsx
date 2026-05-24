@@ -28,6 +28,11 @@ import PlusIcon from "../../src/assets/icons/plusIcon.svg";
 import RoutinesIcon from "../../src/assets/icons/routinesIcon.svg";
 import StorageIcon from "../../src/assets/icons/storageIcon.svg";
 
+import { LoadingBaby } from "@/src/components/Loading";
+import { EmptyState } from "../../src/components/EmptyState";
+import { useGetChildren } from "../../src/services/hook/children/useGetChildren";
+import DateUtils from "../../src/utils/Date";
+
 interface Children {
   id_child: number;
   child_name: string;
@@ -38,23 +43,6 @@ interface Children {
 interface ResponseChild {
   children: Children[];
 }
-
-const mockChildrenData: ResponseChild = {
-  children: [
-    {
-      id_child: 1,
-      child_name: "Alice Silva",
-      birth_date: "2022-05-10",
-      photo: "",
-    },
-    {
-      id_child: 2,
-      child_name: "Enzo Gabriel",
-      birth_date: "2020-11-20",
-      photo: "",
-    },
-  ],
-};
 
 const articlesData = [
   {
@@ -92,28 +80,24 @@ const categoriesData: any[] = [
 
 export default function Home() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isDesktop = width >= 1280;
 
   const [carouselWidth, setCarouselWidth] = useState(width);
 
-  const handleCategoryNavigation = (path: string) => {
-    if (path && path !== "") {
-      const formattedPath = `/${path.toLowerCase()}`;
-      router.push(formattedPath as any);
-    } else {
-      router.push("/");
-    }
-  };
+  const {
+    data: childrenData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetChildren();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [selectedChild, setSelectedChild] = useState<Children | undefined>(
-    mockChildrenData.children[0],
-  );
-  const [listChildren, setListChildren] =
-    useState<ResponseChild>(mockChildrenData);
+  const [selectedChild, setSelectedChild] = useState<Children | undefined>();
+  const [listChildren, setListChildren] = useState<ResponseChild | undefined>();
 
   const carouselRef = useRef<ScrollView>(null);
   const scrollOffset = useRef(0);
@@ -142,22 +126,35 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const fetchChild = async () => {
-      const storedId = await AsyncStorage.getItem("select_child");
-      if (storedId) {
-        const idChild: number = Number(storedId);
-        const child: Children[] | undefined = mockChildrenData.children.filter(
+    const syncChildData = async () => {
+      let storedId = await AsyncStorage.getItem("select_child");
+      if (!storedId) {
+        await AsyncStorage.setItem("select_child", "0");
+        storedId = "0";
+      }
+
+      if (childrenData && Array.isArray(childrenData.children)) {
+        setListChildren(childrenData);
+
+        const idChild = Number(storedId);
+        const child = childrenData.children.find(
           (it) => it.id_child === idChild,
         );
 
-        if (child && child.length > 0) {
-          setSelectedChild(child[0]);
+        if (child && storedId !== "0") {
+          setSelectedChild(child);
+        } else if (childrenData.children.length > 0) {
+          setSelectedChild(childrenData.children[0]);
+          await AsyncStorage.setItem(
+            "select_child",
+            childrenData.children[0].id_child.toString(),
+          );
         }
       }
     };
 
-    fetchChild();
-  }, []);
+    syncChildData();
+  }, [childrenData]);
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
@@ -168,6 +165,47 @@ export default function Home() {
     const currentIndex = Math.round(scrollPosition / cardWidth);
     setActiveIndex(currentIndex);
   };
+
+  const handleCategoryNavigation = (path: string) => {
+    if (path && path !== "") {
+      const formattedPath = `/${path.toLowerCase()}`;
+      router.push(formattedPath as any);
+    } else {
+      router.push("/");
+    }
+  };
+
+  if (isLoading || !childrenData || typeof childrenData === "string") {
+    return (
+      <View
+        style={{ height: height }}
+        className="w-full justify-center items-center bg-light"
+      >
+        <LoadingBaby message="Carregando seus filhos..." />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View
+        style={{ height: height * 0.8 }}
+        className="w-full flex-1 justify-center items-center bg-light"
+      >
+        <EmptyState
+          isFullPage={true}
+          show404Background={true}
+          title="Ops! Algo deu errado."
+          description={
+            error?.message ||
+            "Não conseguimos carregar os dados dos seus filhos."
+          }
+          buttonText="Tentar Novamente"
+          onButtonClick={() => refetch()}
+        />
+      </View>
+    );
+  }
 
   return (
     <View className="w-full flex flex-col  z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-6 relative">
@@ -235,7 +273,6 @@ export default function Home() {
           <View className="w-full bg-lilas xl:bg-transparent shadow-purple-md xl:shadow-none flex flex-col xl:flex-row gap-3 xl:gap-8 px-6 md:px-8 xl:px-0 pt-3 md:pt-4 xl:pt-0 pb-8 md:pb-10 xl:pb-0 rounded-md">
             <View className="w-full flex flex-row justify-between xl:hidden">
               <Pressable onPress={() => router.push("/")}>
-                {/* /addChild */}
                 <PlusIcon width={24} height={24} />
               </Pressable>
               <Pressable onPress={() => setIsModalOpen(true)}>
@@ -244,7 +281,7 @@ export default function Home() {
             </View>
 
             <Pressable
-              onPress={() => router.push("/")} // /addChild
+              onPress={() => router.push("/")}
               className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col hover:opacity-90 transition-all"
             >
               <View className="flex flex-row gap-4 md:gap-6 items-center w-full">
@@ -260,10 +297,12 @@ export default function Home() {
                 </View>
                 <View className="flex flex-col justify-center flex-1">
                   <Text className="font-poppins font-bold text-libg-light xl:text-primary-text text-base md:text-xl xl:text-lg leading-tight">
-                    {selectedChild?.child_name}
+                    {selectedChild?.child_name || "Sem nome"}
                   </Text>
                   <Text className="font-poppins text-sm md:text-base xl:text-sm text-lilas-medium xl:text-primary-text/70">
-                    2 Anos
+                    {selectedChild?.birth_date
+                      ? `${DateUtils.subYearsFormated(selectedChild.birth_date)} anos`
+                      : "Idade não informada"}
                   </Text>
                 </View>
                 <View className="hidden xl:flex p-2">
@@ -305,7 +344,7 @@ export default function Home() {
             </Pressable>
 
             <Pressable
-              onPress={() => router.push("/")} // addChild
+              onPress={() => router.push("/")}
               className="hidden xl:flex w-full xl:w-50 border-2 border-dashed border-primary/40 bg-lilas/20 rounded-xl flex-col items-center justify-center gap-3 hover:bg-lilas/40 transition-colors py-4"
             >
               <View className="w-12 h-12 bg-light rounded-full flex items-center justify-center shadow-sm">
@@ -357,7 +396,7 @@ export default function Home() {
             </View>
 
             <ScrollView className="flex flex-col gap-3 max-h-[60vh]">
-              {listChildren?.children.map((child: Children) => (
+              {listChildren?.children?.map((child: Children) => (
                 <Pressable
                   key={child.id_child}
                   onPress={async () => {
