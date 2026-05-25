@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -38,7 +39,18 @@ export default function AnotationDetails() {
   const router = useRouter();
   const { id, edit } = useLocalSearchParams<{ id: string; edit?: string }>();
   const isEditing = edit === "true";
-  const childSelected = 1;
+
+  const [childSelected, setChildSelected] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchChildId = async () => {
+      const storedId = await AsyncStorage.getItem("select_child");
+      if (storedId) {
+        setChildSelected(Number(storedId));
+      }
+    };
+    fetchChildId();
+  }, []);
 
   const { data, isLoading, isError, error } = useGetDiary(childSelected);
   const updateMutation = useUpdateDiary();
@@ -52,7 +64,15 @@ export default function AnotationDetails() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<DiaryType>();
+  } = useForm<DiaryType>({
+    defaultValues: {
+      title: "",
+      content: "",
+      date: "",
+      color: "",
+      media: "",
+    },
+  });
 
   const diaryList = data && typeof data !== "string" ? data.diary : [];
   const currentAnotation = diaryList.find(
@@ -63,11 +83,11 @@ export default function AnotationDetails() {
     if (currentAnotation) {
       reset({
         id_diary_note: currentAnotation.id_diary_note,
-        title: currentAnotation.title,
-        content: currentAnotation.content,
-        date: currentAnotation.date.split("T")[0],
-        color: currentAnotation.color,
-        media: currentAnotation.media,
+        title: currentAnotation.title || "",
+        content: currentAnotation.content || "",
+        date: currentAnotation.date ? currentAnotation.date.split("T")[0] : "",
+        color: currentAnotation.color || "",
+        media: currentAnotation.media || "",
         fk_id_child: currentAnotation.fk_id_child,
       });
       setColorSelected(currentAnotation.color);
@@ -75,7 +95,7 @@ export default function AnotationDetails() {
     }
   }, [currentAnotation, reset]);
 
-  if (isLoading) {
+  if (isLoading || childSelected === 0) {
     return (
       <View className="flex-1 justify-center items-center bg-light">
         <ActivityIndicator size="large" color="#9D87D2" />
@@ -111,16 +131,31 @@ export default function AnotationDetails() {
     }
   }
 
-  function sendData(formData: DiaryType) {
-    updateMutation.mutate({
-      id_diary_note: formData.id_diary_note,
-      title: formData.title,
-      content: formData.content,
-      date: formData.date,
-      color: colorSelected,
-      media: previewImg || "",
-      fk_id_child: formData.fk_id_child,
-    });
+  function sendData(formDataHook: DiaryType) {
+    const formData = new FormData();
+
+    formData.append("title", formDataHook.title);
+    formData.append("content", formDataHook.content || "");
+    formData.append("date", formDataHook.date);
+    formData.append("color", colorSelected);
+    formData.append(
+      "fk_id_child",
+      String(formDataHook.fk_id_child || childSelected),
+    );
+
+    if (previewImg && previewImg !== currentAnotation?.media) {
+      const filename = previewImg.split("/").pop() || "media.jpg";
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+      formData.append("media", {
+        uri: previewImg,
+        name: filename,
+        type: type,
+      } as any);
+    }
+
+    updateMutation.mutate({ formData, idDiary: Number(id) });
   }
 
   function handleDelete() {
@@ -161,7 +196,7 @@ export default function AnotationDetails() {
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   onChangeText={onChange}
-                  value={value}
+                  value={value || ""}
                   editable={isEditing}
                   textAlign="center"
                   className={`w-full font-poppins font-bold text-xl py-2 ${
@@ -208,7 +243,7 @@ export default function AnotationDetails() {
                 render={({ field: { onChange, value } }) => (
                   <TextInput
                     onChangeText={onChange}
-                    value={value}
+                    value={value || ""}
                     editable={isEditing}
                     className={`font-nunito text-primary italic font-semibold h-10 ${
                       isEditing
@@ -229,7 +264,7 @@ export default function AnotationDetails() {
             </Text>
           </View>
 
-          <View className="flex-1 w-full min-h-37">
+          <View className="flex-1 w-full" style={{ minHeight: 150 }}>
             <Controller
               control={control}
               name="content"
@@ -237,11 +272,11 @@ export default function AnotationDetails() {
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   onChangeText={onChange}
-                  value={value}
+                  value={value || ""}
                   editable={isEditing}
                   multiline
-                  textAlignVertical="top"
-                  className={`w-full flex-1 font-nunito text-justify text-[16px] ${
+                  style={{ textAlignVertical: "top" }}
+                  className={`w-full flex-1 font-nunito text-base ${
                     isEditing ? "rounded-sm border-2 border-primary p-3" : ""
                   }`}
                 />

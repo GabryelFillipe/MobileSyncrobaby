@@ -8,6 +8,7 @@ import {
   Pressable,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
@@ -72,7 +73,7 @@ const categoriesData: any[] = [
   { id: 1, title: "Vacinas", icon: VaccinesIcon, path: "Vaccines" },
   { id: 2, title: "Estoque", icon: StorageIcon, path: "Storage" },
   { id: 3, title: "Rotinas", icon: RoutinesIcon, path: "Routines" },
-  { id: 4, title: "Diário", icon: DiaryIcon, path: "Diary" },
+  { id: 4, title: "Diário", icon: DiaryIcon, path: "diary" },
   { id: 5, title: "Medidas", icon: MeasurementsIcon, path: "Measures" },
   { id: 6, title: "Pediatra", icon: PediatricianIcon, path: "Pediatrician" },
   { id: 7, title: "Saúde", icon: HealthIcon, path: "Health" },
@@ -96,8 +97,16 @@ export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [selectedChild, setSelectedChild] = useState<Children | undefined>();
-  const [listChildren, setListChildren] = useState<ResponseChild | undefined>();
+  const [selectedChild, setSelectedChild] = useState<Children>({
+    id_child: 0,
+    child_name: "Selecione um filho",
+    birth_date: "",
+    photo: "",
+  });
+
+  const [listChildren, setListChildren] = useState<ResponseChild>({
+    children: [],
+  });
 
   const carouselRef = useRef<ScrollView>(null);
   const scrollOffset = useRef(0);
@@ -133,7 +142,11 @@ export default function Home() {
         storedId = "0";
       }
 
-      if (childrenData && Array.isArray(childrenData.children)) {
+      if (
+        childrenData &&
+        childrenData.children &&
+        Array.isArray(childrenData.children)
+      ) {
         setListChildren(childrenData);
 
         const idChild = Number(storedId);
@@ -208,7 +221,7 @@ export default function Home() {
   }
 
   return (
-    <View className="w-full flex flex-col  z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-6 relative">
+    <View className="w-full flex flex-col z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-6 relative">
       <View className="w-full flex flex-col mb-4 mt-6">
         <ScrollView
           ref={carouselRef}
@@ -255,7 +268,7 @@ export default function Home() {
 
         <View className="flex text-start flex-col mt-10 gap-2 md:mb-24 md:gap-6">
           <View className="flex flex-row justify-between items-end xl:px-0">
-            <Pressable onPress={() => console.log(listChildren)}>
+            <Pressable>
               <Text className="text-xl md:text-2xl font-bold font-poppins text-primary-text xl:text-2xl w-full">
                 {isDesktop ? "Meus Filhos" : "Filhos"}
               </Text>
@@ -272,7 +285,7 @@ export default function Home() {
 
           <View className="w-full bg-lilas xl:bg-transparent shadow-purple-md xl:shadow-none flex flex-col xl:flex-row gap-3 xl:gap-8 px-6 md:px-8 xl:px-0 pt-3 md:pt-4 xl:pt-0 pb-8 md:pb-10 xl:pb-0 rounded-md">
             <View className="w-full flex flex-row justify-between xl:hidden">
-              <Pressable onPress={() => router.push("/")}>
+              <Pressable onPress={() => router.push("/add-child" as any)}>
                 <PlusIcon width={24} height={24} />
               </Pressable>
               <Pressable onPress={() => setIsModalOpen(true)}>
@@ -281,12 +294,16 @@ export default function Home() {
             </View>
 
             <Pressable
-              onPress={() => router.push("/")}
+              onPress={() => {
+                if (selectedChild.id_child !== 0) {
+                  router.push("/profile-children" as any);
+                }
+              }}
               className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col hover:opacity-90 transition-all"
             >
               <View className="flex flex-row gap-4 md:gap-6 items-center w-full">
                 <View className="bg-lilas rounded-full p-1 xl:p-0 xl:bg-transparent">
-                  {selectedChild?.photo && selectedChild.photo !== "" ? (
+                  {selectedChild.photo && selectedChild.photo !== "" ? (
                     <Image
                       source={{ uri: selectedChild.photo }}
                       className="w-11 h-11 md:w-14 md:h-14 xl:w-12 xl:h-12 rounded-full"
@@ -296,13 +313,13 @@ export default function Home() {
                   )}
                 </View>
                 <View className="flex flex-col justify-center flex-1">
-                  <Text className="font-poppins font-bold text-libg-light xl:text-primary-text text-base md:text-xl xl:text-lg leading-tight">
-                    {selectedChild?.child_name || "Sem nome"}
+                  <Text className="font-poppins font-bold text-light xl:text-primary-text text-base md:text-xl xl:text-lg leading-tight">
+                    {selectedChild.child_name}
                   </Text>
                   <Text className="font-poppins text-sm md:text-base xl:text-sm text-lilas-medium xl:text-primary-text/70">
-                    {selectedChild?.birth_date
+                    {selectedChild.birth_date
                       ? `${DateUtils.subYearsFormated(selectedChild.birth_date)} anos`
-                      : "Idade não informada"}
+                      : ""}
                   </Text>
                 </View>
                 <View className="hidden xl:flex p-2">
@@ -344,7 +361,7 @@ export default function Home() {
             </Pressable>
 
             <Pressable
-              onPress={() => router.push("/")}
+              onPress={() => router.push("/add-child" as any)}
               className="hidden xl:flex w-full xl:w-50 border-2 border-dashed border-primary/40 bg-lilas/20 rounded-xl flex-col items-center justify-center gap-3 hover:bg-lilas/40 transition-colors py-4"
             >
               <View className="w-12 h-12 bg-light rounded-full flex items-center justify-center shadow-sm">
@@ -366,25 +383,46 @@ export default function Home() {
         animationType="fade"
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <Pressable
-          className="flex-1 flex items-center justify-center bg-black/50 px-4"
-          onPress={() => setIsModalOpen(false)}
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            paddingHorizontal: 16,
+          }}
         >
-          <Pressable
-            className="w-[90%] md:w-100 bg-light rounded-xl p-5 md:p-6 shadow-xl flex flex-col gap-4"
-            onPress={(e) => e.stopPropagation()}
+          <View
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderRadius: 16,
+              padding: 20,
+              width: "100%",
+              maxHeight: "80%",
+            }}
           >
-            <View className="flex flex-row justify-between items-center">
-              <Text className="font-poppins font-bold text-primary-text text-lg md:text-xl">
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Text className="font-poppins font-bold text-primary-text text-xl">
                 Filhos(as)
               </Text>
-              <Pressable onPress={() => setIsModalOpen(false)}>
+              <TouchableOpacity
+                onPress={() => setIsModalOpen(false)}
+                style={{ padding: 8 }}
+              >
                 <Svg
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={2}
                   stroke="currentColor"
-                  className="w-6 h-6 text-primary-text"
+                  width={24}
+                  height={24}
+                  className="text-primary-text"
                 >
                   <Path
                     strokeLinecap="round"
@@ -392,44 +430,81 @@ export default function Home() {
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </Svg>
-              </Pressable>
+              </TouchableOpacity>
             </View>
 
-            <ScrollView className="flex flex-col gap-3 max-h-[60vh]">
-              {listChildren?.children?.map((child: Children) => (
-                <Pressable
-                  key={child.id_child}
-                  onPress={async () => {
-                    setSelectedChild(child);
-                    await AsyncStorage.setItem(
-                      "select_child",
-                      child.id_child.toString(),
-                    );
-                    setIsModalOpen(false);
+            <ScrollView
+              style={{ width: "100%" }}
+              showsVerticalScrollIndicator={false}
+            >
+              {listChildren?.children?.length > 0 ? (
+                listChildren.children.map((child: Children) => (
+                  <TouchableOpacity
+                    key={child.id_child}
+                    activeOpacity={0.7}
+                    onPress={async () => {
+                      setSelectedChild(child);
+                      await AsyncStorage.setItem(
+                        "select_child",
+                        child.id_child.toString(),
+                      );
+                      setIsModalOpen(false);
+                    }}
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#FFFFFF",
+                      borderWidth: 1,
+                      borderColor: "#E5E7EB",
+                      paddingVertical: 12,
+                      paddingHorizontal: 16,
+                      borderRadius: 12,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 12,
+                    }}
+                  >
+                    {child.photo && child.photo !== "" ? (
+                      <Image
+                        source={{ uri: child.photo }}
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 24,
+                          marginRight: 16,
+                        }}
+                      />
+                    ) : (
+                      <View style={{ marginRight: 16 }}>
+                        <ChildrenPhoto width={44} height={44} />
+                      </View>
+                    )}
+                    <View style={{ flex: 1, flexDirection: "column" }}>
+                      <Text className="font-poppins font-bold text-primary-text text-base leading-tight">
+                        {child.child_name}
+                      </Text>
+                      <Text className="font-poppins text-sm text-primary-text/70 mt-1">
+                        {child.birth_date
+                          ? `${DateUtils.subYearsFormated(child.birth_date)} anos`
+                          : "Idade não informada"}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text
+                  style={{
+                    textAlign: "center",
+                    color: "#6B7280",
+                    paddingVertical: 16,
                   }}
-                  className="w-full bg-light border border-lilas md:py-3 py-2 px-4 rounded-xl flex flex-row items-center gap-4"
+                  className="font-poppins"
                 >
-                  {child.photo && child.photo !== "" ? (
-                    <Image
-                      source={{ uri: child.photo }}
-                      className="w-11 h-11 md:w-12 md:h-12 rounded-full"
-                    />
-                  ) : (
-                    <ChildrenPhoto width={44} height={44} />
-                  )}
-                  <View className="flex flex-col">
-                    <Text className="font-poppins font-bold text-primary-text text-sm md:text-base leading-tight">
-                      {child.child_name}
-                    </Text>
-                    <Text className="font-poppins text-xs md:text-sm text-primary-text/70 mt-0.5">
-                      {child.child_name}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
+                  Nenhum filho encontrado nesta conta.
+                </Text>
+              )}
             </ScrollView>
-          </Pressable>
-        </Pressable>
+          </View>
+        </View>
       </Modal>
     </View>
   );

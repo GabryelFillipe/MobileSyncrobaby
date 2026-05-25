@@ -1,5 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter, type Href } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -15,12 +16,23 @@ import { useGetDiary } from "../../src/services/hook/diary/useGetDiary";
 
 export default function Diary() {
   const router = useRouter();
-  const childSelected = 1;
+  const [childSelected, setChildSelected] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchChildId = async () => {
+      const storedId = await AsyncStorage.getItem("select_child");
+      if (storedId) {
+        setChildSelected(Number(storedId));
+      }
+    };
+    fetchChildId();
+  }, []);
+
   const { data, isLoading, isError, error, refetch } =
     useGetDiary(childSelected);
   const [searchText, setSearchText] = useState("");
 
-  if (isLoading) {
+  if (isLoading || childSelected === 0) {
     return (
       <View className="flex-1 justify-center items-center bg-light">
         <ActivityIndicator size="large" color="#9D87D2" />
@@ -41,7 +53,7 @@ export default function Diary() {
     );
   }
 
-  const diaryList = data && typeof data !== "string" ? data.diary : [];
+  const diaryList = data?.diary || [];
 
   if (diaryList.length === 0) {
     return (
@@ -58,7 +70,7 @@ export default function Diary() {
   }
 
   const filteredDiary = diaryList.filter((it) =>
-    it.title.toLowerCase().includes(searchText.toLowerCase()),
+    it?.title?.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   return (
@@ -82,11 +94,11 @@ export default function Diary() {
             key={it.id_diary_note}
             card={{
               id: it.id_diary_note,
-              title: it.title,
-              creation_date: it.date,
-              label_color: it.color,
-              text_content: it.content,
-              midia: it.media,
+              title: it?.title || "Sem título",
+              creation_date: it?.date || "",
+              label_color: it?.color || "#9D87D2",
+              text_content: it?.content || "",
+              midia: it?.media || "",
             }}
           />
         ))}

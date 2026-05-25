@@ -25,15 +25,6 @@ export interface ResponseChildId {
   child: Children[];
 }
 
-export interface UpdateChild {
-  id_child: number;
-  child_name: string;
-  birth_date: string;
-  blood_type: string;
-  photo: string;
-  gender: string;
-}
-
 export interface ResponseJSONUpdateChild {
   status: boolean;
   status_code: number;
@@ -48,16 +39,6 @@ export interface ResponseUpdateChild {
   gender: string;
   fk_id_guardian: number;
   id_child: number;
-}
-
-export interface InsertChild {
-  child_name: string;
-  height: number | null;
-  weight: number | null;
-  birth_date: string;
-  blood_type: string | null;
-  gender: string;
-  photo: string | null;
 }
 
 export interface ResponseInsertChild {
@@ -121,10 +102,14 @@ export const getChildDeactivate = async (): Promise<ResponseChild[]> => {
 };
 
 export const insertChild = async (
-  data: InsertChild,
+  data: FormData,
 ): Promise<ResponseInsertChild> => {
   try {
-    const response = await api.post<ResponseInsertChild>(`/child`, data);
+    const response = await api.post<ResponseInsertChild>(`/child`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError && error.response) {
@@ -137,13 +122,18 @@ export const insertChild = async (
 };
 
 export const updateChild = async (
-  data: UpdateChild,
+  data: FormData,
   childId: number,
 ): Promise<ResponseJSONUpdateChild> => {
   try {
     const response = await api.put<ResponseJSONUpdateChild>(
       `/child/${childId}`,
       data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
     return response.data;
   } catch (error) {

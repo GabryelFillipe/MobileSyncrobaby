@@ -35,6 +35,8 @@ export default function NewAnotation() {
     formState: { errors },
   } = useForm<Register>({
     defaultValues: {
+      title: "",
+      text_content: "",
       creation_date: DateUtils.getTodayFormated(),
     },
   });
@@ -56,26 +58,44 @@ export default function NewAnotation() {
   }
 
   function sendData(data: Register) {
-    insertMutation.mutate({
-      title: data.title,
-      content: data.text_content || "",
-      media: preview || "",
-      date: data.creation_date,
-      color: colorLabel,
-      fk_id_child: 1,
-    });
+    const formData = new FormData();
+
+    formData.append("title", data.title);
+    formData.append("content", data.text_content || "");
+    formData.append("date", data.creation_date);
+    formData.append("color", colorLabel);
+    formData.append("fk_id_child", "1");
+
+    if (preview && preview !== "null") {
+      const filename = preview.split("/").pop() || "media.jpg";
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+      formData.append("media", {
+        uri: preview,
+        name: filename,
+        type: type,
+      } as any);
+    }
+
+    insertMutation.mutate(formData as any);
   }
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 w-full bg-light"
+      className="flex-1 w-full bg-light relative z-100"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingTop: 10,
+          paddingInline: 12,
+        }}
+        className="relative z-100"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-col items-center w-full bg-white rounded-md shadow-purple-sm pb-6">
+        <View className="flex-col relative z-100 items-center w-full bg-white rounded-md shadow-purple-sm pb-0">
           <View className="flex-col items-center bg-[#f4ebfb] w-full rounded-t-md py-4">
             <View className="flex justify-center items-center w-8 h-8 rounded-full shadow-purple-md mb-2 bg-white">
               <CloudPurple width={20} height={20} />
@@ -88,7 +108,7 @@ export default function NewAnotation() {
             </Text>
           </View>
 
-          <View className="flex-col w-full px-4 mt-4">
+          <View className="flex-col w-full px-4 mt-2">
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={pickImage}
@@ -120,7 +140,7 @@ export default function NewAnotation() {
               render={({ field: { onChange, value } }) => (
                 <InputDefault
                   onChangeText={onChange}
-                  value={value}
+                  value={value || ""}
                   maxLength={120}
                   className={inputClass}
                 />
@@ -132,10 +152,10 @@ export default function NewAnotation() {
               </Text>
             )}
 
-            <View className="flex-row justify-between w-full mt-2">
+            <View className="flex-row justify-between w-full mt-0">
               <View className="flex-col flex-1 mr-4">
                 <Text className={labelClass}>Etiqueta</Text>
-                <View className="flex-row flex-wrap gap-2 mt-1">
+                <View className="flex-row flex-wrap gap-1 mt-1">
                   {colors.map((color) => (
                     <TouchableOpacity
                       key={color.color}
@@ -155,14 +175,14 @@ export default function NewAnotation() {
                   render={({ field: { onChange, value } }) => (
                     <InputDefault
                       onChangeText={onChange}
-                      value={value}
+                      value={value || ""}
                       placeholder="YYYY-MM-DD"
                       className={inputClass}
                     />
                   )}
                 />
                 {errors.creation_date && (
-                  <Text className="text-red-600/70 text-sm font-nunito mt-1">
+                  <Text className="text-red-600/70 text-sm font-nunito mt-0">
                     {errors.creation_date.message}
                   </Text>
                 )}
@@ -177,12 +197,12 @@ export default function NewAnotation() {
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   onChangeText={onChange}
-                  value={value}
+                  value={value || ""}
                   maxLength={760}
                   multiline={true}
                   numberOfLines={5}
                   textAlignVertical="top"
-                  className="font-poppins text-primary text-[16px] border border-primary-darker rounded-sm w-full min-h-30 p-3"
+                  className="font-poppins text-primary text-[16px] border border-primary-darker rounded-sm w-full min-h-[120px] p-3"
                 />
               )}
             />
@@ -198,17 +218,17 @@ export default function NewAnotation() {
               </Text>
             )}
 
-            <View className="flex-row justify-between items-center w-full mt-8 mb-4">
+            <View className="flex-row justify-between items-center w-full mt-4 mb-4">
               <BtnPrimary
                 onPress={() => router.back()}
                 text="Cancelar"
-                className="w-[45%] h-12 bg-white border border-gray-300"
+                className="w-[45%] h-10 bg-white border border-gray-300"
                 textClassName="text-dark-purple"
               />
               <BtnPrimary
                 onPress={handleSubmit(sendData)}
                 text={insertMutation.isPending ? "Salvando..." : "Registrar"}
-                className="w-[45%] h-12 bg-accent"
+                className="w-[45%] h-10 bg-accent"
                 textClassName="text-white font-semibold"
                 disabled={insertMutation.isPending}
               />

@@ -54,10 +54,14 @@ export const getDiary = async (childId: number): Promise<ResponseDiary> => {
 };
 
 export const insertDiary = async (
-  data: InsertDiary,
+  data: FormData,
 ): Promise<ResponseInsertDiary> => {
   try {
-    const response = await api.post<ResponseInsertDiary>(`/diary`, data);
+    const response = await api.post<ResponseInsertDiary>(`/diary`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError && error.response) {
@@ -70,13 +74,18 @@ export const insertDiary = async (
 };
 
 export const updateDiary = async (
-  data: InsertDiary,
+  data: FormData,
   idDiary: number,
 ): Promise<ResponseUpdateDiary> => {
   try {
     const response = await api.put<ResponseUpdateDiary>(
       `/diary/${idDiary}`,
       data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
     return response.data;
   } catch (error) {

@@ -1,4 +1,4 @@
-import { Link, usePathname, useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Image,
@@ -15,9 +15,7 @@ import DateUtils from "../utils/Date";
 
 import Notifications from "../assets/icons/notifications.svg";
 import Search from "../assets/icons/search.svg";
-import Profile from "../assets/navigation/profileHeader.svg";
 import SetBack from "../assets/navigation/setBack.svg";
-import SetBackProfile from "../assets/profileChildren/setBackProfile.svg";
 
 export interface Notification {
   id: number;
@@ -39,18 +37,6 @@ function Header() {
       description:
         "Olá! A sua vacina Febre Amarela está agendada para dia 28/02/2026",
     },
-    {
-      id: 2,
-      title: "Fraldas acabando!",
-      type: "storage",
-      description: "Olá! Seu item: Fraldas acabará em breve!",
-    },
-    {
-      id: 3,
-      title: "Aniversário a vista!",
-      type: "birthday",
-      description: "Parabéns! Pedro completará 2 aninhos em 3 dias!",
-    },
   ]);
 
   const { width } = useWindowDimensions();
@@ -65,35 +51,37 @@ function Header() {
     setVisibleNotifications(!visibleNotifications);
   }
 
-  function setTitleHeader(path: string) {
-    if (path === "/home" || path === "/") return "Home";
-    if (path === "/routines") return "Rotinas";
-    if (path === "/feeding") return "Alimentacão";
-    if (path === "/storage") return "Estoque";
-    if (path === "/add-storage") return "Adicionar produto";
-    if (path === "/sleep") return "Sono";
-    if (path === "/health") return "Enfermidades";
-    if (path === "/pediatrician") return "Profissionais";
-    if (path === "/diaper") return "Fraldas";
-    if (path === "/vaccines") return "Vacinas";
-    if (path === "/shower") return "Banho";
-    if (path === "/medicine") return "Medicação";
-    if (path === "/profile-children") return "";
-    if (path === "/articles") return "Dicas";
-    if (path === "/add-child") return "Adicionar Filho(a)";
-    if (path.includes("/article/")) return "Artigo";
-    if (path === "/addProfessional") return "Adicionar Profissional";
-    if (path === "/editProfessional") return "Editar Profissional";
-    if (path === "/add-illness") return "Adicionar Enfermidade";
-    if (path === "/measures") return "Medidas";
-    if (path === "/updateMeasure") return "Atualizar medidas";
-    if (path === "/profile-user") return "Perfil";
-    if (path.includes("/edit-illness/")) return "Editar enfermidade";
-    if (path === "/diary") return "Diário";
-    if (path.includes("/anotationDiary/")) return "Anotação";
-    if (path === "/newAnotation") return "Nova lembrança";
+  function getTitle(path?: string | null): string {
+    if (!path || path === "/" || path.includes("home")) return "Home";
+    const p = path.toLowerCase();
+    if (p.includes("newanotation")) return "Nova lembrança";
+    if (p.includes("anotationdiary")) return "Anotação";
+    if (p.includes("diary")) return "Diário";
+    if (p.includes("add-storage")) return "Adicionar produto";
+    if (p.includes("storage")) return "Estoque";
+    if (p.includes("articles")) return "Dicas";
+    if (p.includes("article")) return "Artigo";
+    if (p.includes("addprofessional")) return "Adicionar Profissional";
+    if (p.includes("editprofessional")) return "Editar Profissional";
+    if (p.includes("pediatrician")) return "Profissionais";
+    if (p.includes("add-illness")) return "Adicionar Enfermidade";
+    if (p.includes("edit-illness")) return "Editar enfermidade";
+    if (p.includes("health")) return "Enfermidades";
+    if (p.includes("updatemeasure")) return "Atualizar medidas";
+    if (p.includes("measures")) return "Medidas";
+    if (p.includes("add-child")) return "Adicionar Filho(a)";
+    if (p.includes("routines")) return "Rotinas";
+    if (p.includes("feeding")) return "Alimentacão";
+    if (p.includes("sleep")) return "Sono";
+    if (p.includes("diaper")) return "Fraldas";
+    if (p.includes("vaccines")) return "Vacinas";
+    if (p.includes("shower")) return "Banho";
+    if (p.includes("medicine")) return "Medicação";
     return "";
   }
+
+  const title = getTitle(pathname);
+  const isHome = title === "Home";
 
   useEffect(() => {
     setWindowWidth(width <= 1279);
@@ -103,7 +91,6 @@ function Header() {
     const handleTime = setInterval(() => {
       setDateHour(DateUtils.getHourFormated());
     }, 60000);
-
     return () => clearInterval(handleTime);
   }, []);
 
@@ -124,24 +111,17 @@ function Header() {
 
   return (
     <View
-      className={` top-0 flex flex-col justify-between  mb-16 max-h-10 items-center w-screen px-6 pt-8 z-90 bg-light ${setTitleHeader(pathname) !== "Home" ? "h-24" : "h-32"} md:px-14 xl:h-24 xl:flex-row xl:px-20 xl:pt-8 xl:items-start xl:right-0 ${pathname === "/profile-children" || pathname === "/profile-user" ? "xl:w-[80%]" : "xl:w-[85%] xl:max-w-[calc(100%-200px)]"}`}
+      className={`flex flex-col justify-between w-screen px-6 pt-16 z-90 bg-light ${isHome ? "h-32" : "h-24"} md:px-14 xl:h-24 xl:flex-row xl:px-20 xl:pt-8 xl:items-start`}
     >
       <Pressable
         onPress={moveNoticationsBar}
-        className={`xl:absolute xl:top-0 xl:z-80 xl:right-0 xl:w-screen xl:h-screen xl:bg-black/60 xl:backdrop-blur-[1px]  ${visibleNotifications ? "xl:flex" : "hidden"}`}
+        className={`xl:absolute xl:top-0 xl:z-80 xl:right-0 xl:w-screen xl:h-screen xl:bg-black/60 xl:backdrop-blur-[1px] ${visibleNotifications ? "xl:flex" : "hidden"}`}
       />
 
-      <Pressable
-        onPress={() => router.back()}
-        className={`xl:ml-58 ${(pathname === "/profile-children" && !windowWidth) || (pathname === "/profile-user" && !windowWidth) ? "flex" : "hidden"}`}
-      >
-        {renderIcon(SetBackProfile, { alt: "Retorna a tela anterior." })}
-      </Pressable>
-
       <View
-        className={`flex flex-row items-center w-full h-9 rounded-2xl bg-lilas shadow-purple-sm px-2 ${(setTitleHeader(pathname) !== "Home" && windowWidth) || pathname === "/profile-children" || pathname === "/profile-user" ? "hidden" : "flex"} md:h-11 xl:w-2/3`}
+        className={`flex flex-row items-center w-full h-9 rounded-2xl bg-lilas px-2 ${!isHome && windowWidth ? "hidden" : "flex"} md:h-11 xl:w-2/3`}
       >
-        {renderIcon(Search, { "aria-hidden": "true", className: "w-4 h-4" })}
+        {renderIcon(Search, { className: "w-4 h-4" })}
         <InputDefault className="flex-1 pl-2 font-poppins text-primary-text" />
       </View>
 
@@ -150,75 +130,32 @@ function Header() {
           {DateHour}
         </Text>
 
-        <View
-          className={`flex flex-row items-center gap-3 ${setTitleHeader(pathname) !== "Home" && windowWidth ? "flex" : "hidden"}`}
-        >
-          <Pressable onPress={() => router.back()}>
-            {renderIcon(SetBack, {
-              alt: "Icone para voltar a tela anterior.",
-              className: "w-6 h-6",
-            })}
-          </Pressable>
-          <Text className={`text-text-primary font-poppins font-bold text-2xl`}>
-            {setTitleHeader(pathname)}
-          </Text>
-        </View>
-
-        <View
-          className={`flex-1 shrink min-w-0 mr-3 mt-4 ${setTitleHeader(pathname) !== "Home" ? "hidden" : "flex"} xl:hidden`}
-          style={{ justifyContent: "center" }}
-        >
-          <Text
-            className="font-inter font-bold text-base md:text-lg text-primary-text"
-            numberOfLines={2}
-            ellipsizeMode="tail"
-          >
-            {userName?.trim() ? (
-              <>
-                Olá{" "}
-                <Text className="text-primary font-bold">
-                  {userName.trim()}
-                </Text>
-                !
-              </>
-            ) : (
-              <>
-                Olá<Text className="text-primary font-bold">!</Text>
-              </>
-            )}
-          </Text>
-        </View>
-
-        <View className="flex flex-row gap-4 mt-8 items-center">
-          <View className="relative">
-            <Pressable
-              onPress={moveNoticationsBar}
-              className="flex justify-center items-center"
-            >
-              <View
-                className={`absolute justify-center items-center rounded-full bg-primary w-5.5 h-5.5 -right-2 -top-2 z-90 ${notifications.length !== 0 ? "flex" : "hidden"} md:h-6 md:w-6`}
-              >
-                <Text className="font-bold text-white text-[14px]">
-                  {notifications.length}
-                </Text>
-              </View>
-              {renderIcon(Notifications, {
-                alt: "Icone de redirecionamento para notificações.",
-                className: `w-6 h-6 ${notifications.length !== 0 ? "animate-bell" : ""} md:h-8 md:w-8`,
-              })}
+        {!isHome && (
+          <View className="flex flex-row items-center gap-3">
+            <Pressable onPress={() => router.back()}>
+              {renderIcon(SetBack, { className: "w-6 h-6" })}
             </Pressable>
+            <Text className="text-primary-text font-poppins font-bold text-2xl">
+              {title}
+            </Text>
           </View>
+        )}
 
-          <Link href="/profileUser" asChild>
-            <Pressable
-              className={`w-7 h-7 -mt-px md:h-8 md:w-8 md:mt-0 xl:hidden ${pathname === "/profile-children" || pathname === "/profile-user" ? "hidden" : "flex"}`}
-            >
-              {renderIcon(Profile, {
-                alt: "Icone de perfil de usuário.",
-                className: "w-full h-full",
-              })}
-            </Pressable>
-          </Link>
+        {isHome && (
+          <View className="flex-1 justify-center mt-4 mb-4 xl:hidden">
+            <Text className="font-poppins font-bold text-base text-primary-text">
+              Olá,
+            </Text>
+            <Text className="font-poppins font-bold text-lg text-primary ml-2">
+              {userName.trim()}!
+            </Text>
+          </View>
+        )}
+
+        <View className="flex flex-row gap-4 items-center">
+          <Pressable onPress={moveNoticationsBar}>
+            {renderIcon(Notifications, { className: "w-6 h-6 md:h-8 md:w-8" })}
+          </Pressable>
         </View>
       </View>
 

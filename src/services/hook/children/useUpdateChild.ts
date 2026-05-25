@@ -2,14 +2,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   updateChild,
   type ResponseJSONUpdateChild,
-  type UpdateChild,
 } from "../../children/children.service";
 
 export const useUpdateChild = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<ResponseJSONUpdateChild, Error, UpdateChild>({
-    mutationFn: (data: UpdateChild) => updateChild(data, data.id_child),
+  return useMutation<
+    ResponseJSONUpdateChild,
+    Error,
+    { formData: FormData; childId: number }
+  >({
+    mutationFn: ({ formData, childId }) => updateChild(formData, childId),
 
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["children"] });

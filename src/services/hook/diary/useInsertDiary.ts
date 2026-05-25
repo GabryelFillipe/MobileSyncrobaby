@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import type { InsertDiary } from "../../diary/diary.service";
 import { insertDiary } from "../../diary/diary.service";
 
 export const useInsertDiary = () => {
@@ -8,7 +7,7 @@ export const useInsertDiary = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: InsertDiary) => insertDiary(data),
+    mutationFn: (data: FormData) => insertDiary(data),
 
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["diary"] });
