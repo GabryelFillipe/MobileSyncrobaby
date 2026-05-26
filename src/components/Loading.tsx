@@ -5,17 +5,22 @@ import babyCrawlingAnimation from "../../src/assets/icons/baby_crawling.json";
 
 interface LoadingBabyProps {
   message?: string;
+  width?: number;
+  height?: number;
 }
 
-export function LoadingBaby({ message = "Carregando..." }: LoadingBabyProps) {
+export function LoadingBaby({ message, width, height }: LoadingBabyProps) {
   return (
-    <View className="w-full flex flex-col items-center justify-center py-12 gap-4">
+    <View className="w-full bg-accent flex flex-col items-center justify-center">
       <View className="w-48 h-48 md:w-64 md:h-64">
         <LottieView
           source={babyCrawlingAnimation}
           autoPlay
           loop
-          style={{ width: "100%", height: "100%" }}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
         />
       </View>
       <Text className="text-primary font-nunito font-semibold text-lg text-center animate-pulse">

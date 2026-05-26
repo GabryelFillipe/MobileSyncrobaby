@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   Modal,
@@ -29,17 +30,9 @@ import PlusIcon from "../../src/assets/icons/plusIcon.svg";
 import RoutinesIcon from "../../src/assets/icons/routinesIcon.svg";
 import StorageIcon from "../../src/assets/icons/storageIcon.svg";
 
-import { LoadingBaby } from "@/src/components/Loading";
-import { EmptyState } from "../../src/components/EmptyState";
+import { Children } from "@/src/services/children/children.service";
 import { useGetChildren } from "../../src/services/hook/children/useGetChildren";
 import DateUtils from "../../src/utils/Date";
-
-interface Children {
-  id_child: number;
-  child_name: string;
-  birth_date: string;
-  photo: string;
-}
 
 interface ResponseChild {
   children: Children[];
@@ -81,18 +74,12 @@ const categoriesData: any[] = [
 
 export default function Home() {
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const isDesktop = width >= 1280;
 
   const [carouselWidth, setCarouselWidth] = useState(width);
 
-  const {
-    data: childrenData,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useGetChildren();
+  const { data: childrenData, isLoading, isError } = useGetChildren();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -100,8 +87,15 @@ export default function Home() {
   const [selectedChild, setSelectedChild] = useState<Children>({
     id_child: 0,
     child_name: "Selecione um filho",
+    height: 0,
+    weight: 0,
     birth_date: "",
+    BMI: null,
+    blood_type: "",
+    gender: "",
     photo: "",
+    active: 1,
+    fk_id_guardian: 0,
   });
 
   const [listChildren, setListChildren] = useState<ResponseChild>({
@@ -188,38 +182,6 @@ export default function Home() {
     }
   };
 
-  if (isLoading || !childrenData || typeof childrenData === "string") {
-    return (
-      <View
-        style={{ height: height }}
-        className="w-full justify-center items-center bg-light"
-      >
-        <LoadingBaby message="Carregando seus filhos..." />
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View
-        style={{ height: height * 0.8 }}
-        className="w-full flex-1 justify-center items-center bg-light"
-      >
-        <EmptyState
-          isFullPage={true}
-          show404Background={true}
-          title="Ops! Algo deu errado."
-          description={
-            error?.message ||
-            "Não conseguimos carregar os dados dos seus filhos."
-          }
-          buttonText="Tentar Novamente"
-          onButtonClick={() => refetch()}
-        />
-      </View>
-    );
-  }
-
   return (
     <View className="w-full flex flex-col z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-6 relative">
       <View className="w-full flex flex-col mb-4 mt-6">
@@ -266,7 +228,7 @@ export default function Home() {
           />
         </View>
 
-        <View className="flex text-start flex-col mt-10 gap-2 md:mb-24 md:gap-6">
+        <View className="flex text-start flex-col mt-0 gap-2 md:mb-24 md:gap-6">
           <View className="flex flex-row justify-between items-end xl:px-0">
             <Pressable>
               <Text className="text-xl md:text-2xl font-bold font-poppins text-primary-text xl:text-2xl w-full">
@@ -299,65 +261,87 @@ export default function Home() {
                   router.push("/profile-children" as any);
                 }
               }}
-              className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col hover:opacity-90 transition-all"
+              className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col justify-center hover:opacity-90 transition-all min-h-22"
             >
-              <View className="flex flex-row gap-4 md:gap-6 items-center w-full">
-                <View className="bg-lilas rounded-full p-1 xl:p-0 xl:bg-transparent">
-                  {selectedChild.photo && selectedChild.photo !== "" ? (
-                    <Image
-                      source={{ uri: selectedChild.photo }}
-                      className="w-11 h-11 md:w-14 md:h-14 xl:w-12 xl:h-12 rounded-full"
-                    />
-                  ) : (
-                    <ChildrenPhoto width={44} height={44} />
-                  )}
-                </View>
-                <View className="flex flex-col justify-center flex-1">
-                  <Text className="font-poppins font-bold text-light xl:text-primary-text text-base md:text-xl xl:text-lg leading-tight">
-                    {selectedChild.child_name}
-                  </Text>
-                  <Text className="font-poppins text-sm md:text-base xl:text-sm text-lilas-medium xl:text-primary-text/70">
-                    {selectedChild.birth_date
-                      ? `${DateUtils.subYearsFormated(selectedChild.birth_date)} anos`
-                      : ""}
-                  </Text>
-                </View>
-                <View className="hidden xl:flex p-2">
-                  <Svg
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2.5}
-                    stroke="currentColor"
-                    className="w-6 h-6 text-gray-500"
-                  >
-                    <Path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                    />
-                  </Svg>
-                </View>
-              </View>
-
-              <View className="hidden xl:flex flex-row items-center gap-2 mt-6 pt-4 border-t border-gray-100 w-full">
-                <Svg
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-5 h-5 text-gray-400"
-                >
-                  <Path
-                    fillRule="evenodd"
-                    d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"
-                    clipRule="evenodd"
+              {isLoading ? (
+                <View className="flex flex-row items-center justify-center  gap-3 w-full">
+                  <ActivityIndicator
+                    color={isDesktop ? "#6B7280" : "#FFFFFF"}
                   />
-                </Svg>
-                <Text className="text-gray-400 text-xs font-poppins">
-                  Ultima Alimentação:
-                </Text>
-                <Text className="text-primary-text font-bold text-xs ml-auto">
-                  A ser implementado
-                </Text>
-              </View>
+                  <Text className="font-poppins font-bold text-light xl:text-primary-text text-base">
+                    Carregando...
+                  </Text>
+                </View>
+              ) : typeof childrenData === "string" ? (
+                <View className="flex flex-row items-center justify-center w-full">
+                  <Text className="font-poppins font-bold text-light xl:text-primary-text text-base text-center">
+                    {childrenData}
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <View className="flex flex-row gap-4 md:gap-6 items-center w-full">
+                    <View className="bg-lilas rounded-full p-1 xl:p-0 xl:bg-transparent">
+                      {selectedChild.photo && selectedChild.photo !== "" ? (
+                        <Image
+                          source={{ uri: selectedChild.photo }}
+                          className="w-11 h-11 md:w-14 md:h-14 xl:w-12 xl:h-12 rounded-full"
+                        />
+                      ) : (
+                        <ChildrenPhoto width={44} height={44} />
+                      )}
+                    </View>
+                    <View className="flex flex-col justify-center flex-1">
+                      <Text className="font-poppins font-bold text-light xl:text-primary-text text-base md:text-xl xl:text-lg leading-tight">
+                        {selectedChild.child_name}
+                      </Text>
+                      {selectedChild.id_child !== 0 &&
+                        selectedChild.birth_date && (
+                          <Text className="font-poppins text-sm md:text-base xl:text-sm text-lilas-medium xl:text-primary-text/70">
+                            {`${DateUtils.subYearsFormated(selectedChild.birth_date)} anos`}
+                          </Text>
+                        )}
+                    </View>
+                    <View className="hidden xl:flex p-2">
+                      <Svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2.5}
+                        stroke="currentColor"
+                        className="w-6 h-6 text-gray-500"
+                      >
+                        <Path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+                        />
+                      </Svg>
+                    </View>
+                  </View>
+
+                  {selectedChild.id_child !== 0 && (
+                    <View className="hidden xl:flex flex-row items-center gap-2 mt-6 pt-4 border-t border-gray-100 w-full">
+                      <Svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="w-5 h-5 text-gray-400"
+                      >
+                        <Path
+                          fillRule="evenodd"
+                          d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"
+                          clipRule="evenodd"
+                        />
+                      </Svg>
+                      <Text className="text-gray-400 text-xs font-poppins">
+                        Ultima Alimentação:
+                      </Text>
+                      <Text className="text-primary-text font-bold text-xs ml-auto">
+                        A ser implementado
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
             </Pressable>
 
             <Pressable

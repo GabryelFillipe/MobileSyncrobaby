@@ -11,9 +11,9 @@ const getBaseUrl = () => {
   }
   //return "https:syncrobaby/";
 };
-
 export const api = axios.create({
   baseURL: getBaseUrl(),
+  timeout: 8000,
 });
 
 api.interceptors.request.use(async (config) => {

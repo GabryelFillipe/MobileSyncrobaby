@@ -35,9 +35,5 @@ export const useLogin = () => {
 
       router.replace("/home");
     },
-
-    onError: (error: Error) => {
-      console.log("ERRO DA API:", error.message);
-    },
   });
 };

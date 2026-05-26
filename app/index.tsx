@@ -67,6 +67,7 @@ export default function ScreenWelcome() {
           <TouchableOpacity
             activeOpacity={0.7}
             className="bg-accent w-full items-center h-14 justify-center rounded-xl"
+            onPress={() => router.replace("/(auth)/register")}
           >
             <Text className="text-white font-bold text-2xl">Cadastre-se</Text>
           </TouchableOpacity>
