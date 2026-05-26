@@ -1,13 +1,8 @@
+import { LoadingBaby } from "@/src/components/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter, type Href } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Search from "../../src/assets/icons/search.svg";
 import { EmptyState } from "../../src/components/EmptyState";
 import { InputDefault } from "../../src/components/InputDefault";
@@ -35,7 +30,7 @@ export default function Diary() {
   if (isLoading || childSelected === 0) {
     return (
       <View className="flex-1 justify-center items-center bg-light">
-        <ActivityIndicator size="large" color="#9D87D2" />
+        <LoadingBaby message="Careregando registros..." />
       </View>
     );
   }

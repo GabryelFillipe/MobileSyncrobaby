@@ -11,7 +11,7 @@ interface LoadingBabyProps {
 
 export function LoadingBaby({ message, width, height }: LoadingBabyProps) {
   return (
-    <View className="w-full bg-accent flex flex-col items-center justify-center">
+    <View className="w-full flex flex-col items-center justify-center">
       <View className="w-48 h-48 md:w-64 md:h-64">
         <LottieView
           source={babyCrawlingAnimation}
