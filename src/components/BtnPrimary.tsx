@@ -19,7 +19,9 @@ export default function BtnPrimary({
       className={`rounded-sm py-2 px-3 ${className}`}
       {...props}
     >
-      <Text className={`font-poppins ${textClassName}`}>{text}</Text>
+      <Text className={`font-poppins font-bold text-center ${textClassName}`}>
+        {text}
+      </Text>
     </TouchableOpacity>
   );
 }

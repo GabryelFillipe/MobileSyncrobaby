@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -183,8 +183,8 @@ export default function Home() {
   };
 
   return (
-    <View className="w-full flex flex-col z-91 pt-4 pb-0 md:py-10 md:gap-8 gap-6 relative">
-      <View className="w-full flex flex-col mb-4 mt-6">
+    <View className="w-full flex flex-col z-91  pb-0 md:py-10 md:gap-8 gap-6 relative">
+      <View className="w-full flex flex-col mb-4">
         <ScrollView
           ref={carouselRef}
           horizontal
@@ -247,7 +247,7 @@ export default function Home() {
 
           <View className="w-full bg-lilas xl:bg-transparent shadow-purple-md xl:shadow-none flex flex-col xl:flex-row gap-3 xl:gap-8 px-6 md:px-8 xl:px-0 pt-3 md:pt-4 xl:pt-0 pb-8 md:pb-10 xl:pb-0 rounded-md">
             <View className="w-full flex flex-row justify-between xl:hidden">
-              <Pressable onPress={() => router.push("/add-child" as any)}>
+              <Pressable onPress={() => router.push("/(app)/child/addChild")}>
                 <PlusIcon width={24} height={24} />
               </Pressable>
               <Pressable onPress={() => setIsModalOpen(true)}>
@@ -258,7 +258,9 @@ export default function Home() {
             <Pressable
               onPress={() => {
                 if (selectedChild.id_child !== 0) {
-                  router.push("/profile-children" as any);
+                  router.push(`/(app)/child/${selectedChild.id_child}` as Href);
+                } else {
+                  router.push("/(app)/child/addChild" as Href);
                 }
               }}
               className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col justify-center hover:opacity-90 transition-all min-h-22"

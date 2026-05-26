@@ -14,6 +14,7 @@ interface AuthContextData {
   user: User | null;
   logout: () => void;
   signIn: (userData: User) => void;
+  updateUserContext: (userData: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -63,13 +64,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = (userData: User) => {
+    console.log(
+      "DEBUG: signIn chamado, autenticando usuário e salvando estado...",
+    );
     setUser(userData);
     setIsAuthenticated(true);
   };
 
+  const updateUserContext = async (userData: User) => {
+    setUser(userData);
+    await AsyncStorage.setItem("user_name", userData.name);
+    await AsyncStorage.setItem("user_email", userData.email);
+    await AsyncStorage.setItem("user_photo", userData.photo);
+  };
+
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, isLoading, user, logout, signIn }}
+      value={{
+        isAuthenticated,
+        isLoading,
+        user,
+        logout,
+        signIn,
+        updateUserContext,
+      }}
     >
       {children}
     </AuthContext.Provider>
