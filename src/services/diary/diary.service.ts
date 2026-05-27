@@ -1,4 +1,4 @@
-import { AxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
 import { api } from "../api";
 
 export interface Diary {
@@ -44,10 +44,11 @@ export const getDiary = async (childId: number): Promise<ResponseDiary> => {
     const response = await api.get<ResponseDiary>(`/diary/child/${childId}`);
     return response.data;
   } catch (error) {
-    if (error instanceof AxiosError && error.response) {
-      throw new Error(
-        error.response.data.message || "Erro ao buscar os registros do diário.",
-      );
+    if (isAxiosError(error) && error.response?.status === 404) {
+      return {
+        status_code: 404,
+        diary: [],
+      };
     }
     throw new Error("Erro de conexão com o servidor ao buscar o diário.");
   }

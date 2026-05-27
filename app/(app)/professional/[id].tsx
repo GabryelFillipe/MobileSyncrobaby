@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -14,18 +14,17 @@ import {
   View,
 } from "react-native";
 
-import SetSelector from "../../src/assets/icons/setExpandSelector.svg";
-import BtnPrimary from "../../src/components/BtnPrimary";
-import { InputDefault } from "../../src/components/InputDefault";
-
-import { useInsertProfessional } from "../../src/services/hook/professional/insertProfessional";
-import { useGetSpecialties } from "../../src/services/hook/specialty/getSpecialty";
-
+import SetSelectorIcon from "../../../src/assets/icons/setExpandSelector.svg";
+import BtnPrimary from "../../../src/components/BtnPrimary";
+import { InputDefault } from "../../../src/components/InputDefault";
 import {
   inputClassName,
   labelClassName,
   labelRadioButton,
-} from "../../src/style/globalStyles";
+} from "../../../src/style/globalStyles";
+
+import { useUpdateProfessional } from "../../../src/services/hook/professional/updateProfessional";
+import { useGetSpecialties } from "../../../src/services/hook/specialty/getSpecialty";
 
 interface PediatricianData {
   name: string;
@@ -36,19 +35,27 @@ interface PediatricianData {
   description?: string;
 }
 
-export default function AddProfessional() {
+export default function EditProfessional() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+
+  const initialProfessional = useMemo(() => {
+    const rawData = typeof params.data === "string" ? params.data : null;
+    return rawData ? JSON.parse(rawData) : null;
+  }, [params.data]);
 
   const { data: specialtiesResponse, isLoading: isLoadingSpecialties } =
     useGetSpecialties();
   const specialties = specialtiesResponse?.specialty || [];
 
-  const { mutateAsync: addProfessional, isPending } = useInsertProfessional();
+  const { mutateAsync: updateProfessional, isPending } =
+    useUpdateProfessional();
 
   const [childId, setChildId] = useState<number>(0);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [professionExpand, setProfessionExpand] = useState<boolean>(false);
   const [professionLabel, setProfessionLabel] = useState<string>(
-    "Selecione a profissão...",
+    "Carregando profissão...",
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -56,8 +63,20 @@ export default function AddProfessional() {
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
-  } = useForm<PediatricianData>();
+  } = useForm<PediatricianData>({
+    defaultValues: {
+      name: initialProfessional?.professional_name || "",
+      profession: "",
+      address: initialProfessional?.address || "",
+      phone: initialProfessional?.phone || "",
+      last_appointment_date: initialProfessional?.last_consultation
+        ? initialProfessional.last_consultation.split("T")[0]
+        : "",
+      description: initialProfessional?.description || "",
+    },
+  });
 
   useEffect(() => {
     async function loadChildId() {
@@ -69,23 +88,43 @@ export default function AddProfessional() {
     loadChildId();
   }, []);
 
-  async function sendDatas(data: PediatricianData) {
-    if (childId === 0) {
-      Alert.alert("Erro", "Nenhuma criança selecionada. Volte à tela inicial.");
-      return;
+  useEffect(() => {
+    if (specialties.length > 0 && initialProfessional) {
+      const foundSpec = specialties.find(
+        (s) =>
+          Number(s.id_specialization) ===
+          Number(initialProfessional.fk_id_specialization),
+      );
+
+      if (foundSpec) {
+        setProfessionLabel(foundSpec.specialization_name);
+
+        reset({
+          name: initialProfessional.professional_name || "",
+          profession: foundSpec.specialization_name,
+          address: initialProfessional.address || "",
+          phone: initialProfessional.phone || "",
+          last_appointment_date: initialProfessional.last_consultation
+            ? initialProfessional.last_consultation.split("T")[0]
+            : "",
+          description: initialProfessional.description || "",
+        });
+      } else {
+        setProfessionLabel("Selecione a profissão...");
+      }
     }
+  }, [specialties, initialProfessional, reset]);
+
+  async function sendDatas(data: PediatricianData) {
+    if (!initialProfessional) return;
 
     const selectedSpecialty = specialties.find(
       (spec) => spec.specialization_name === data.profession,
     );
 
-    if (!selectedSpecialty) {
-      Alert.alert(
-        "Erro",
-        "Por favor, selecione uma profissão válida da lista.",
-      );
-      return;
-    }
+    const specialtyId = selectedSpecialty
+      ? selectedSpecialty.id_specialization
+      : initialProfessional.fk_id_specialization;
 
     const payload = {
       professional_name: data.name,
@@ -93,16 +132,21 @@ export default function AddProfessional() {
       last_consultation: data.last_appointment_date,
       address: data.address,
       fk_id_child: childId,
-      fk_id_specialization: selectedSpecialty.id_specialization,
-      descripition: data.description,
+      fk_id_specialization: specialtyId,
+      description: data.description,
     };
 
     try {
-      await addProfessional(payload);
-      Alert.alert("Sucesso", "Profissional adicionado com sucesso!");
+      await updateProfessional({
+        idProfessional: initialProfessional.id_professional,
+        data: payload,
+      });
+
+      Alert.alert("Sucesso", "Profissional atualizado com sucesso!");
+      setIsEditing(false);
       router.back();
     } catch (error: any) {
-      Alert.alert("Erro", error.message || "Falha ao registrar profissional.");
+      Alert.alert("Erro", error.message || "Falha ao editar profissional.");
     }
   }
 
@@ -122,16 +166,23 @@ export default function AddProfessional() {
     return `${day}/${month}/${year}`;
   };
 
+  if (!initialProfessional) {
+    return (
+      <View className="flex-1 justify-center items-center bg-light">
+        <Text className="font-poppins text-primary-text">
+          Dados do profissional não encontrados.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 w-full bg-light"
     >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="flex flex-col gap-0 w-full justify-between mt-2">
+      <View className="px-6">
+        <View className="flex flex-col w-full justify-between h-full mt-2">
           <View className="flex flex-col mb-4">
             <Text className={labelClassName}>Nome</Text>
             <Controller
@@ -140,34 +191,42 @@ export default function AddProfessional() {
               rules={{ required: "O nome é obrigatório!" }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <InputDefault
-                  placeholder="Dr. Henrique Cavalcante"
+                  placeholder="Ex: Dr. Henrique"
                   type="text"
-                  className={inputClassName}
+                  className={`${inputClassName} ${!isEditing ? "opacity-70 bg-gray-100" : "bg-white"}`}
+                  editable={isEditing}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
                 />
               )}
             />
-            {errors.name && (
+            {errors.name && isEditing && (
               <Text className="text-red-600 text-sm mt-1 font-poppins">
                 {errors.name.message}
               </Text>
             )}
           </View>
 
-          <View className="relative flex flex-col mb-4 z-50">
+          <View
+            className="relative flex flex-col mb-4"
+            style={{ zIndex: 50, elevation: 5 }}
+          >
             <Text className={labelClassName}>Profissão</Text>
             <TouchableOpacity
               activeOpacity={0.8}
-              className={`flex-row justify-between items-center z-50 p-3 bg-white border border-primary-darker rounded-md h-12`}
+              disabled={!isEditing}
+              className={`flex-row justify-between items-center p-3 h-12 border border-primary-darker rounded-md ${
+                !isEditing ? "opacity-70 bg-gray-100" : "bg-white"
+              } ${inputClassName}`}
               onPress={() => setProfessionExpand(!professionExpand)}
             >
-              <Text className={labelClassName}>{professionLabel}</Text>
+              <Text className="text-black font-poppins">{professionLabel}</Text>
+
               {isLoadingSpecialties ? (
                 <ActivityIndicator size="small" color="#9CA3AF" />
               ) : (
-                <SetSelector
+                <SetSelectorIcon
                   width={24}
                   height={24}
                   style={
@@ -179,9 +238,15 @@ export default function AddProfessional() {
               )}
             </TouchableOpacity>
 
-            {professionExpand && (
-              <View className="absolute top-16 md:top-22 xl:top-18 flex-col w-full rounded-bl-lg rounded-br-lg border-b border-l border-r border-primary-darker overflow-y-auto max-h-48 bg-white z-40 pt-2 pb-2 gap-2 shadow-purple-sm ">
-                <ScrollView nestedScrollEnabled>
+            {professionExpand && isEditing && (
+              <View
+                className="absolute top-13 w-full rounded-b-lg border-b border-l border-r border-primary-darker bg-white py-2 shadow-purple-sm max-h-48"
+                style={{ zIndex: 100, elevation: 10 }}
+              >
+                <ScrollView
+                  nestedScrollEnabled={true}
+                  style={{ maxHeight: 180 }}
+                >
                   {specialties.map((spec) => (
                     <TouchableOpacity
                       key={spec.id_specialization}
@@ -202,14 +267,14 @@ export default function AddProfessional() {
                 </ScrollView>
               </View>
             )}
-            {errors.profession && (
+            {errors.profession && isEditing && (
               <Text className="text-red-600 text-sm mt-1 font-poppins">
                 {errors.profession.message}
               </Text>
             )}
           </View>
 
-          <View className="flex flex-col mb-4 z-10">
+          <View className="flex flex-col mb-4" style={{ zIndex: 10 }}>
             <Text className={labelClassName}>Endereço</Text>
             <Controller
               control={control}
@@ -217,23 +282,24 @@ export default function AddProfessional() {
               rules={{ required: "O endereço é obrigatório!" }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <InputDefault
-                  placeholder="Av. das Orquídeas, 450"
+                  placeholder="Ex: Av. das Orquídeas, 450"
                   type="text"
-                  className={inputClassName}
+                  className={`${inputClassName} ${!isEditing ? "opacity-70 bg-gray-100" : "bg-white"}`}
+                  editable={isEditing}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
                 />
               )}
             />
-            {errors.address && (
+            {errors.address && isEditing && (
               <Text className="text-red-600 text-sm mt-1 font-poppins">
                 {errors.address.message}
               </Text>
             )}
           </View>
 
-          <View className="flex flex-col mb-4 z-10">
+          <View className="flex flex-col mb-4" style={{ zIndex: 10 }}>
             <Text className={labelClassName}>Data da última consulta</Text>
             <Controller
               control={control}
@@ -242,8 +308,11 @@ export default function AddProfessional() {
               render={({ field: { value } }) => (
                 <TouchableOpacity
                   activeOpacity={0.8}
+                  disabled={!isEditing}
                   onPress={() => setShowDatePicker(true)}
-                  className={`justify-center h-12 p-3 bg-white border border-primary-darker rounded-md`}
+                  className={`justify-center h-12 p-3 border border-primary-darker rounded-md ${
+                    !isEditing ? "opacity-70 bg-gray-100" : "bg-white"
+                  }`}
                 >
                   <Text
                     className={`font-poppins ${value ? "text-primary-text" : "text-gray-400"}`}
@@ -253,13 +322,13 @@ export default function AddProfessional() {
                 </TouchableOpacity>
               )}
             />
-            {errors.last_appointment_date && (
+            {errors.last_appointment_date && isEditing && (
               <Text className="text-red-600 text-sm mt-1 font-poppins">
                 {errors.last_appointment_date.message}
               </Text>
             )}
 
-            {showDatePicker && (
+            {showDatePicker && isEditing && (
               <DateTimePicker
                 value={
                   control._formValues.last_appointment_date
@@ -274,7 +343,7 @@ export default function AddProfessional() {
             )}
           </View>
 
-          <View className="flex flex-col mb-4 z-10">
+          <View className="flex flex-col mb-4" style={{ zIndex: 10 }}>
             <Text className={labelClassName}>Número de telefone</Text>
             <Controller
               control={control}
@@ -284,21 +353,22 @@ export default function AddProfessional() {
                 <InputDefault
                   placeholder="(11) 4002-8922"
                   type="number"
-                  className={inputClassName}
+                  className={`${inputClassName} ${!isEditing ? "opacity-70 bg-gray-100" : "bg-white"}`}
+                  editable={isEditing}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
                 />
               )}
             />
-            {errors.phone && (
+            {errors.phone && isEditing && (
               <Text className="text-red-600 text-sm mt-1 font-poppins">
                 {errors.phone.message}
               </Text>
             )}
           </View>
 
-          <View className="flex flex-col mb-8 z-10">
+          <View className="flex flex-col mb-8" style={{ zIndex: 10 }}>
             <Text className={labelClassName}>Descrição</Text>
             <Controller
               control={control}
@@ -309,8 +379,9 @@ export default function AddProfessional() {
                   numberOfLines={4}
                   type="text"
                   placeholder="Consultamos para tratar de doenças e etc..."
-                  className="w-full h-20 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg md:h-14 xl:bg-white xl:h-11 xl:px-4 caret-primary-darker"
+                  className={`h-32 p-3 mt-1 border border-primary-darker font-poppins rounded-lg bg-white text-primary-text`}
                   style={{ textAlignVertical: "top" }}
+                  editable={isEditing}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -319,25 +390,42 @@ export default function AddProfessional() {
             />
           </View>
 
-          <View className="flex-row justify-between w-full h-12 mt-auto">
+          <View
+            className="flex-row justify-between w-full h-12 mt-auto mb-10"
+            style={{ zIndex: 10 }}
+          >
             <BtnPrimary
-              text="Cancelar"
-              className={`flex-1 mr-2 bg-white rounded-xl justify-center items-center shadow-purple-md`}
-              textClassName="text-gray-700 font-poppins font-bold"
-              onPress={() => router.back()}
+              text="Voltar"
+              className={`flex-1 mr-2 items-center justify-center bg-white shadow-purple-md rounded-xl`}
+              textClassName="font-poppins font-bold text-gray-700"
+              onPress={() => {
+                if (isEditing) {
+                  setIsEditing(false);
+                } else {
+                  router.back();
+                }
+              }}
               disabled={isPending}
             />
 
             <BtnPrimary
-              text={isPending ? "Registrando..." : "Registrar"}
-              className={`flex-1 ml-2 bg-accent rounded-xl justify-center items-center`}
+              text={
+                isPending
+                  ? "Salvando..."
+                  : isEditing
+                    ? "Registrar edição"
+                    : "Editar"
+              }
+              className={`flex-1 ml-2 items-center justify-center bg-accent rounded-xl`}
               textClassName="text-white font-poppins font-bold"
-              onPress={handleSubmit(sendDatas)}
+              onPress={
+                isEditing ? handleSubmit(sendDatas) : () => setIsEditing(true)
+              }
               disabled={isPending}
             />
           </View>
         </View>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }

@@ -63,9 +63,15 @@ export default function Header() {
     if (p.includes("storage")) return "Estoque";
     if (p.includes("articles")) return "Dicas";
     if (p.includes("article")) return "Artigo";
-    if (p.includes("addprofessional")) return "Adicionar Profissional";
-    if (p.includes("editprofessional")) return "Editar Profissional";
-    if (p.includes("pediatrician")) return "Profissionais";
+
+    // Novas validações de rotas para Profissionais
+    if (p.includes("addprofessional") || p.includes("add-professional"))
+      return "Adicionar Profissional";
+    if (p.includes("editprofessional") || p.includes("professional/"))
+      return "Editar Profissional";
+    if (p.includes("professional") || p.includes("pediatrician"))
+      return "Profissionais";
+
     if (p.includes("add-illness")) return "Adicionar Enfermidade";
     if (p.includes("edit-illness")) return "Editar enfermidade";
     if (p.includes("health")) return "Enfermidades";

@@ -68,7 +68,7 @@ const categoriesData: any[] = [
   { id: 3, title: "Rotinas", icon: RoutinesIcon, path: "Routines" },
   { id: 4, title: "Diário", icon: DiaryIcon, path: "diary" },
   { id: 5, title: "Medidas", icon: MeasurementsIcon, path: "Measures" },
-  { id: 6, title: "Pediatra", icon: PediatricianIcon, path: "Pediatrician" },
+  { id: 6, title: "Pediatra", icon: PediatricianIcon, path: "Professional" },
   { id: 7, title: "Saúde", icon: HealthIcon, path: "Health" },
 ];
 
