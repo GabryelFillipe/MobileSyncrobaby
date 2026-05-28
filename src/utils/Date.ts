@@ -54,7 +54,7 @@ function formatedDayYear(dataStr: string) {
   return fullDate;
 }
 
-function calculateDaysFormated(dayInitial: Date, operator: "more" | "less") {
+function calculateDaysFormated(dayInitial: Date | string, operator: "more" | "less" | "none") {
   let dateFull: string = "";
 
   if (operator === "more") {
@@ -66,6 +66,12 @@ function calculateDaysFormated(dayInitial: Date, operator: "more" | "less") {
     dateFull = format(subDays(dayInitial, 1), "EEEE, dd 'de' MMMM", {
       locale: ptBR,
     });
+    dateFull = dateFull.charAt(0).toUpperCase() + dateFull.slice(1);
+  } else if (operator == "none") {
+    dateFull = format(dayInitial, "EEEE, dd 'de' MMMM", {
+      locale: ptBR,
+    });
+
     dateFull = dateFull.charAt(0).toUpperCase() + dateFull.slice(1);
   }
 

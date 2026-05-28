@@ -4,8 +4,8 @@ import {
   Image,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 import NotificationsPage from "../../app/(app)/notifications";
@@ -81,7 +81,7 @@ export default function Header() {
       return "Adicionar Filho(a)";
     if (p.includes("routines")) return "Rotinas";
     if (p.includes("feeding")) return "Alimentacão";
-    if (p.includes("sleep")) return "Sono";
+    if (p.includes("routineSleep")) return "Sono";
     if (p.includes("diaper")) return "Fraldas";
     if (p.includes("vaccines")) return "Vacinas";
     if (p.includes("shower")) return "Banho";
@@ -120,7 +120,7 @@ export default function Header() {
 
   return (
     <View
-      className={`flex flex-col justify-between w-screen px-6 pt-16 pb-6 z-90 bg-light md:px-14 xl:h-24 xl:flex-row xl:px-20 xl:pt-8 xl:items-start`}
+      className={`flex flex-col justify-between w-screen px-6 pt-10 pb-6 z-90 md:px-14 xl:h-24 xl:flex-row xl:px-20 xl:pt-8 xl:items-start`}
     >
       <TouchableOpacity
         activeOpacity={1}
@@ -176,7 +176,7 @@ export default function Header() {
 
           <TouchableOpacity
             activeOpacity={0.8}
-            className="w-10 h-10 rounded-full overflow-hidden justify-center items-cente"
+            className="w-10 h-10 rounded-full overflow-hidden justify-center items-center"
             onPress={() => router.push("/profileUser")}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
