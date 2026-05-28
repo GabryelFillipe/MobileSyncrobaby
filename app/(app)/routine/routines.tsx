@@ -291,7 +291,7 @@ function Routines() {
 
     return (
         <View className="flex flex-col mt-10 w-screen xl:w-full">
-            <View className=" w-full h-11 flex xl:flex xl:flex-row xl:justify-between xl:h-15">
+            <View className=" w-full h-11 p-6 flex xl:flex xl:flex-row xl:justify-between xl:h-15">
                 {/* <ChildrenSelect idChild={childrenSelected} setChild={setChildSelected} /> */}
 
                 <View className="relative flex flex-row items-center gap-1 w-full h-14 text-lilas-dark rounded-2xl border-2 shadow-purple-sm border-primary-darker xl:w-67 xl:border-0 xl:justify-center">

@@ -47,7 +47,7 @@ export default function UpdateMeasures() {
       showsVerticalScrollIndicator={false}
     >
       <View className="flex-1 w-full pb-10">
-        <View className="flex flex-col bg-white rounded-2xl mx-4 mt-2 pb-6 shadow-sm overflow-hidden">
+        <View className="flex flex-col bg-white rounded-2xl mx-4 mt-10 pb-6 shadow-sm overflow-hidden">
           <LinearGradient
             colors={["#F4EBFB", "#FFEFEF"]}
             start={{ x: 0, y: 1 }}
@@ -58,7 +58,7 @@ export default function UpdateMeasures() {
               <MeasuresIcon width={24} height={24} />
             </View>
             <Text className="font-poppins text-darker-purple font-bold text-xl mb-1">
-              Registrar Medidas
+              Atualizar Medidas
             </Text>
             <Text className="font-nunito text-gray-500 text-center text-sm px-2">
               Acompanhe de perto o desenvolvimento do seu bebê

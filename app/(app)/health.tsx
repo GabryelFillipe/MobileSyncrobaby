@@ -112,7 +112,7 @@ export default function Health() {
           text="Registrar Enfermidade"
           className="bg-accent rounded-lg py-3 shadow-md w-full"
           textClassName="text-white font-bold text-center"
-          onPress={() => router.push("/updateMeasure")} // /addIllness
+          onPress={() => router.push("/(app)/routine/routineMedicine")} // /addIllness
         />
       </View>
 
