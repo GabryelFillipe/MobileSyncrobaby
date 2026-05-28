@@ -11,6 +11,7 @@ export function InputDefault({
   className,
   type = "text",
   style,
+  value,
   ...rest
 }: InputProps) {
   const treatedClasses = Array.isArray(className)
@@ -25,8 +26,6 @@ export function InputDefault({
       keyboardType = "email-address";
       break;
     case "number":
-      keyboardType = "numeric";
-      break;
     case "date":
       keyboardType = "numeric";
       break;
@@ -42,6 +41,7 @@ export function InputDefault({
       className={treatedClasses}
       keyboardType={keyboardType}
       secureTextEntry={secureTextEntry}
+      value={value || ""}
       style={[{ paddingVertical: 0, textAlignVertical: "center" }, style]}
       {...rest}
     />

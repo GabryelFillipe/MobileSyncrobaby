@@ -123,6 +123,19 @@ export default function Professional() {
       ? "Sua rede de apoio ainda não tem profissionais cadastrados. Que tal adicionar o primeiro?"
       : "Parece que essa especialidade foi parar na caixa de brinquedos. Que tal adicionar um novo profissional?";
 
+  // if (!isLoading && !isSearching && !isError && filteredItems.length === 0) {
+  //   return (
+  //     <EmptyState
+  //       isFullPage={true}
+  //       show404Background={false}
+  //       title={emptyStateTitle}
+  //       description={emptyStateDescription}
+  //       buttonText="Adicionar profissional"
+  //       onButtonClick={() => router.push("/addProfessional")}
+  //     />
+  //   );
+  // }
+
   if (childId === 0) {
     return <LoadingBaby message="Carregando profissionais..." />;
   }
@@ -182,14 +195,16 @@ export default function Professional() {
             !isSearching &&
             !isError &&
             filteredItems.length === 0 && (
-              <EmptyState
-                isFullPage={false}
-                show404Background={false}
-                title={emptyStateTitle}
-                description={emptyStateDescription}
-                buttonText="Adicionar profissional"
-                onButtonClick={() => router.push("/addProfessional")}
-              />
+              <View className="flex-col items-center justify-center">
+                <EmptyState
+                  isFullPage={true}
+                  show404Background={false}
+                  title={emptyStateTitle}
+                  description={emptyStateDescription}
+                  buttonText="Adicionar profissional"
+                  onButtonClick={() => router.push("/addProfessional")}
+                />
+              </View>
             )}
 
           {!isLoading &&

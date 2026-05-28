@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Href, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -62,7 +62,7 @@ const articlesData = [
   },
 ];
 
-const categoriesData: any[] = [
+export const categoriesData: any[] = [
   { id: 1, title: "Vacinas", icon: VaccinesIcon, path: "Vaccines" },
   { id: 2, title: "Estoque", icon: StorageIcon, path: "Storage" },
   { id: 3, title: "Rotinas", icon: RoutinesIcon, path: "Routines" },
@@ -258,12 +258,15 @@ export default function Home() {
             <Pressable
               onPress={() => {
                 if (selectedChild.id_child !== 0) {
-                  router.push(`/(app)/child/${selectedChild.id_child}` as Href);
+                  router.push({
+                    pathname: "/(app)/child/[id]",
+                    params: { id: selectedChild.id_child },
+                  });
                 } else {
-                  router.push("/(app)/child/addChild" as Href);
+                  router.push("/(app)/child/addChild");
                 }
               }}
-              className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col justify-center hover:opacity-90 transition-all min-h-22"
+              className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col justify-center min-h-22"
             >
               {isLoading ? (
                 <View className="flex flex-row items-center justify-center  gap-3 w-full">

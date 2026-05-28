@@ -105,11 +105,7 @@ export const insertChild = async (
   data: FormData,
 ): Promise<ResponseInsertChild> => {
   try {
-    const response = await api.post<ResponseInsertChild>(`/child`, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await api.post<ResponseInsertChild>(`/child`, data);
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError && error.response) {
@@ -129,11 +125,6 @@ export const updateChild = async (
     const response = await api.put<ResponseJSONUpdateChild>(
       `/child/${childId}`,
       data,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
     );
     return response.data;
   } catch (error) {
