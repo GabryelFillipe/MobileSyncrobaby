@@ -1,4 +1,4 @@
-import { AxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
 import { api } from "../api";
 
 export interface Children {
@@ -105,10 +105,15 @@ export const insertChild = async (
   data: FormData,
 ): Promise<ResponseInsertChild> => {
   try {
-    const response = await api.post<ResponseInsertChild>(`/child`, data);
+    const response = await api.post<ResponseInsertChild>(`/child`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
     return response.data;
   } catch (error) {
-    if (error instanceof AxiosError && error.response) {
+    if (isAxiosError(error) && error.response) {
       throw new Error(
         error.response.data.message || "Erro ao cadastrar a criança.",
       );

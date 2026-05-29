@@ -78,8 +78,6 @@ export default function AddChildPage() {
         name: filename,
         type: type,
       } as any);
-    } else {
-      formData.append("photo", "");
     }
 
     handleRegisterAPI(formData, {
@@ -87,8 +85,7 @@ export default function AddChildPage() {
         router.back();
       },
       onError: (error: any) => {
-        const message =
-          error.response?.data?.message || "Erro ao adicionar filho(a).";
+        const message = error.message || "Erro ao adicionar filho(a).";
         alert(message);
       },
     });
