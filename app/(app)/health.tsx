@@ -1,44 +1,16 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ScrollView, View } from "react-native";
 
+import { LoadingBaby } from "@/src/components/Loading";
 import BtnPrimary from "../../src/components/BtnPrimary";
+import { DropdownFilter } from "../../src/components/DropdownFilter";
 import { EmptyState } from "../../src/components/EmptyState";
 import { IllnessCard } from "../../src/components/illness/IllnessCard";
 
-export interface HealthRecord {
-  id_illness: number;
-  illness_name: string;
-  illness_type: string;
-  start_date: string;
-  end_date: string;
-  medication: string;
-  description: string;
-  fk_id_child: number;
-}
-
-const MOCK_ILLNESS: HealthRecord[] = [
-  {
-    id_illness: 1,
-    illness_name: "Gripe Forte",
-    illness_type: "acute",
-    start_date: "2026-05-10T00:00:00Z",
-    end_date: "2026-05-17T00:00:00Z",
-    medication: "Paracetamol 500mg, 8/8h",
-    description: "Febre alta nos 3 primeiros dias.",
-    fk_id_child: 1,
-  },
-  {
-    id_illness: 2,
-    illness_name: "Asma",
-    illness_type: "chronic",
-    start_date: "2024-02-15T00:00:00Z",
-    end_date: "",
-    medication: "Aerolin em crise",
-    description: "Piora no tempo seco e frio.",
-    fk_id_child: 1,
-  },
-];
+import { useDeleteIllness } from "../../src/services/hook/illness/useDeleteIllness";
+import { useGetIllness } from "../../src/services/hook/illness/useGetIllness";
 
 const filterOptions = [
   { id: "Todas", label: "Todas" },
@@ -49,9 +21,24 @@ const filterOptions = [
 export default function Health() {
   const router = useRouter();
 
-  const [illnessList, setIllnessList] = useState<HealthRecord[]>(MOCK_ILLNESS);
+  const [childId, setChildId] = useState<number>(0);
   const [selectedFilter, setSelectedFilter] = useState("Todas");
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function loadChildId() {
+      const storedId = await AsyncStorage.getItem("select_child");
+      if (storedId) {
+        setChildId(Number(storedId));
+      }
+    }
+    loadChildId();
+  }, []);
+
+  const { data, isLoading } = useGetIllness(childId, childId !== 0);
+  const deleteMutation = useDeleteIllness();
+
+  const illnessList = data?.illness || [];
 
   const filteredItems = illnessList.filter((item) => {
     if (selectedFilter === "Todas") return true;
@@ -66,79 +53,75 @@ export default function Health() {
 
   const emptyStateDescription =
     selectedFilter === "Todas"
-      ? "Mas você vai ter que registrar?"
-      : `Mas você vai ter que registrar alguma doença ${selectedFilter.toLowerCase()}?`;
+      ? "Parece que está tudo bem com seu bebê"
+      : `Deseja registrar uma condição de saúde ${selectedFilter.toLowerCase()}?`;
 
   const toggleCard = (id: number) => {
     setExpandedCardId((prev) => (prev === id ? null : id));
   };
 
   const deleteItem = (id: number) => {
-    setIllnessList((prev) => prev.filter((item) => item.id_illness !== id));
+    deleteMutation.mutate(id);
   };
 
-  return (
-    <View className="flex-1 w-full flex-col gap-6 bg-light px-4 pt-6">
-      <View className="flex flex-row justify-between items-center w-full mb-2">
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="flex-row"
-        >
-          {filterOptions.map((opt) => (
-            <TouchableOpacity
-              key={opt.id}
-              onPress={() => setSelectedFilter(opt.label)}
-              className={`px-4 py-2 rounded-lg mr-2 border ${
-                selectedFilter === opt.label
-                  ? "bg-accent border-accent"
-                  : "bg-white border-gray-200"
-              }`}
-            >
-              <Text
-                className={`font-semibold ${
-                  selectedFilter === opt.label ? "text-white" : "text-gray-500"
-                }`}
-              >
-                {opt.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+  if (isLoading || childId === 0) {
+    return (
+      <View className="flex-1 justify-center items-center bg-light">
+        <LoadingBaby message="Carregando enfermidades..." />
       </View>
+    );
+  }
 
-      <View className="w-full mb-2">
+  return (
+    <View className="flex-1 w-full flex-col bg-light px-4 pt-0">
+      <View className="flex-row justify-between items-start w-full mb-6 z-50">
+        <View className="w-[45%]">
+          <DropdownFilter
+            options={filterOptions}
+            selectedFilter={selectedFilter}
+            onSelect={setSelectedFilter}
+          />
+        </View>
+
         <BtnPrimary
-          text="Registrar Enfermidade"
-          className="bg-accent rounded-lg py-3 shadow-md w-full"
-          textClassName="text-white font-bold text-center"
-          onPress={() => router.push("/(app)/routine/routineMedicine")} // /addIllness
+          text="Registrar"
+          className="w-[50%] bg-accent rounded-lg h-10 shadow-md"
+          textClassName="text-white font-bold text-center text-sm"
+          onPress={() => router.push("/(app)/illness/addIllness")}
         />
       </View>
 
-      <ScrollView
-        className="flex-1 w-full pb-10"
-        showsVerticalScrollIndicator={false}
-      >
-        {filteredItems.length === 0 ? (
-          <EmptyState
-            title={emptyStateTitle}
-            description={emptyStateDescription}
-            buttonText="Adicionar enfermidade"
-            onButtonClick={() => router.push("/")} // /addIllness
-          />
-        ) : (
-          filteredItems.map((item) => (
-            <IllnessCard
-              key={item.id_illness}
-              item={item}
-              expandedCardId={expandedCardId}
-              toggleCard={toggleCard}
-              onDelete={deleteItem}
-            />
-          ))
-        )}
-      </ScrollView>
+      <View className="flex-1 z-10">
+        <ScrollView
+          className="flex-1 w-full "
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {filteredItems.length === 0 ? (
+            <View className="flex-1 justify-center items-center mt-10">
+              <EmptyState
+                isFullPage={true}
+                show404Background={false}
+                title={emptyStateTitle}
+                description={emptyStateDescription}
+                buttonText="Adicionar enfermidade"
+                onButtonClick={() => router.push("/(app)/illness/addIllness")}
+              />
+            </View>
+          ) : (
+            filteredItems.map((item) => (
+              <IllnessCard
+                key={item.id_illness}
+                item={item}
+                expandedCardId={expandedCardId}
+                toggleCard={toggleCard}
+                onDelete={deleteItem}
+                isDeleting={deleteMutation.isPending}
+              />
+            ))
+          )}
+        </ScrollView>
+      </View>
     </View>
   );
 }

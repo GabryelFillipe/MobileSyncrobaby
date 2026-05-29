@@ -14,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import SetBack from "../../../src/assets/navigation/setBack.svg";
 import Trash from "../../../src/assets/routines/trashPurple.svg";
 import BtnPrimary from "../../../src/components/BtnPrimary";
 import { EmptyState } from "../../../src/components/EmptyState";
@@ -171,12 +170,8 @@ export default function AnotationDetails() {
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 w-full px-4 pt-4 text-primary-text">
-          <View className="flex-row justify-between items-center w-full mb-4">
-            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
-              <SetBack width={24} height={24} />
-            </TouchableOpacity>
-
+        <View className="flex-1 w-full px-4 pt-0 text-primary-text">
+          <View className="flex-row justify-between items-center w-full mb-0">
             {isEditing && (
               <TouchableOpacity
                 onPress={handleDelete}
@@ -199,7 +194,7 @@ export default function AnotationDetails() {
                   value={value || ""}
                   editable={isEditing}
                   textAlign="center"
-                  className={`w-full font-poppins font-bold text-xl py-2 ${
+                  className={`w-full font-poppins font-bold text-2xl py-2 ${
                     isEditing ? "border-2 border-primary rounded-sm" : ""
                   }`}
                 />
