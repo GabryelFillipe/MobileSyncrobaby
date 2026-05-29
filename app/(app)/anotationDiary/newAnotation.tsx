@@ -1,14 +1,16 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+
 import {
   Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -23,11 +25,12 @@ import { colors } from "./[id]";
 const labelClass =
   "font-poppins text-primary-darker font-semibold text-[14px] mb-1 mt-4";
 const inputClass =
-  "font-poppins text-primary text-[16px] border border-primary-darker rounded-sm w-full h-12 pl-3";
+  "font-poppins text-primary text-[16px] border border-primary-darker rounded-sm w-full h-12 pl-3 bg-white";
 
 export default function NewAnotation() {
   const router = useRouter();
   const insertMutation = useInsertDiary();
+  const [childId, setChildId] = useState<number>(0);
 
   const {
     control,
@@ -37,16 +40,27 @@ export default function NewAnotation() {
     defaultValues: {
       title: "",
       text_content: "",
-      creation_date: DateUtils.getTodayFormated(),
+      creation_date: DateUtils.getTodayFormated(), // Mantém a data de hoje como padrão
     },
   });
 
   const [colorLabel, setColorLabel] = useState<string>("");
   const [preview, setPreview] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  useEffect(() => {
+    async function loadChildId() {
+      const storedId = await AsyncStorage.getItem("select_child");
+      if (storedId) {
+        setChildId(Number(storedId));
+      }
+    }
+    loadChildId();
+  }, []); // Adicionado o array de dependências vazias para não ficar em loop
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -57,6 +71,24 @@ export default function NewAnotation() {
     }
   }
 
+  const getDisplayDate = (dateString?: string) => {
+    if (!dateString) return "DD/MM/AAAA";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  const handleDateChange = (
+    event: any,
+    selectedDate?: Date,
+    onChange?: (val: string) => void,
+  ) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate && onChange) {
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      onChange(formattedDate);
+    }
+  };
+
   function sendData(data: Register) {
     const formData = new FormData();
 
@@ -64,7 +96,7 @@ export default function NewAnotation() {
     formData.append("content", data.text_content || "");
     formData.append("date", data.creation_date);
     formData.append("color", colorLabel);
-    formData.append("fk_id_child", "1");
+    formData.append("fk_id_child", childId.toString());
 
     if (preview && preview !== "null") {
       const filename = preview.split("/").pop() || "media.jpg";
@@ -89,14 +121,14 @@ export default function NewAnotation() {
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          paddingTop: 10,
-          paddingInline: 12,
+          paddingTop: 5,
+          paddingHorizontal: 12, // Trocado de paddingInline para paddingHorizontal
         }}
         className="relative z-100"
         showsVerticalScrollIndicator={false}
       >
         <View className="flex-col relative z-100 items-center w-full bg-white rounded-md shadow-purple-sm pb-0">
-          <View className="flex-col items-center bg-[#f4ebfb] w-full rounded-t-md py-4">
+          <View className="flex-col items-center bg-[#f4ebfb] w-full rounded-t-md py-2">
             <View className="flex justify-center items-center w-8 h-8 rounded-full shadow-purple-md mb-2 bg-white">
               <CloudPurple width={20} height={20} />
             </View>
@@ -139,6 +171,7 @@ export default function NewAnotation() {
               rules={{ required: "Campo obrigatório" }}
               render={({ field: { onChange, value } }) => (
                 <InputDefault
+                  type="text"
                   onChangeText={onChange}
                   value={value || ""}
                   maxLength={120}
@@ -173,12 +206,35 @@ export default function NewAnotation() {
                   control={control}
                   name="creation_date"
                   render={({ field: { onChange, value } }) => (
-                    <InputDefault
-                      onChangeText={onChange}
-                      value={value || ""}
-                      placeholder="YYYY-MM-DD"
-                      className={inputClass}
-                    />
+                    <>
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => setShowDatePicker(true)}
+                        className={`justify-center font-poppins text-primary text-[16px] border border-primary-darker rounded-sm w-full h-12 pl-3 bg-white`}
+                      >
+                        <Text
+                          className={`font-poppins ${
+                            value ? "text-primary-text" : "text-gray-400"
+                          }`}
+                        >
+                          {getDisplayDate(value)}
+                        </Text>
+                      </TouchableOpacity>
+
+                      {showDatePicker && (
+                        <DateTimePicker
+                          value={
+                            value ? new Date(value + "T12:00:00") : new Date()
+                          }
+                          mode="date"
+                          display="default"
+                          maximumDate={new Date()}
+                          onChange={(event, date) =>
+                            handleDateChange(event, date, onChange)
+                          }
+                        />
+                      )}
+                    </>
                   )}
                 />
                 {errors.creation_date && (
@@ -195,14 +251,15 @@ export default function NewAnotation() {
               name="text_content"
               rules={{ required: "Campo obrigatório" }}
               render={({ field: { onChange, value } }) => (
-                <TextInput
+                <InputDefault
+                  type="text"
                   onChangeText={onChange}
                   value={value || ""}
                   maxLength={760}
                   multiline={true}
                   numberOfLines={5}
-                  textAlignVertical="top"
-                  className="font-poppins text-primary text-[16px] border border-primary-darker rounded-sm w-full min-h-[120px] p-3"
+                  style={{ textAlignVertical: "top" }}
+                  className="font-poppins text-primary text-[16px] border border-primary-darker rounded-sm w-full min-h-30 p-3 bg-white"
                 />
               )}
             />

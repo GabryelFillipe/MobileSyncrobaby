@@ -64,7 +64,6 @@ export default function Header() {
     if (p.includes("articles")) return "Dicas";
     if (p.includes("article")) return "Artigo";
 
-    // Novas validações de rotas para Profissionais
     if (p.includes("addprofessional") || p.includes("add-professional"))
       return "Adicionar Profissional";
     if (p.includes("editprofessional") || p.includes("professional/"))
@@ -72,16 +71,20 @@ export default function Header() {
     if (p.includes("professional") || p.includes("pediatrician"))
       return "Profissionais";
 
-    if (p.includes("add-illness")) return "Adicionar Enfermidade";
-    if (p.includes("edit-illness")) return "Editar enfermidade";
-    if (p.includes("health")) return "Enfermidades";
+    if (p.includes("addillness")) return "Adicionar Enfermidade";
+
+    if (p.includes("editillness") || p.match(/\/(illness)\/\d+/))
+      return "Editar enfermidade";
+
+    if (p.includes("health") || p.includes("illness")) return "Enfermidades";
+
     if (p.includes("updatemeasure")) return "Atualizar medidas";
     if (p.includes("measures")) return "Medidas";
     if (p.includes("addchild") || p.includes("add-child"))
       return "Adicionar Filho(a)";
     if (p.includes("routines")) return "Rotinas";
     if (p.includes("feeding")) return "Alimentacão";
-    if (p.includes("routineSleep")) return "Sono";
+    if (p.includes("routinesleep")) return "Sono";
     if (p.includes("diaper")) return "Fraldas";
     if (p.includes("vaccines")) return "Vacinas";
     if (p.includes("shower")) return "Banho";
