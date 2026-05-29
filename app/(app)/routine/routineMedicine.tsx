@@ -1,11 +1,13 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-
 import BtnPrimary from "../../../src/components/BtnPrimary";
 import { InputDefault } from "../../../src/components/InputDefault";
 
-import { useGetProductByType } from "@/src/services/hook/product/useGetProductByType";
+import { useGetProductByTypeStorage } from "@/src/services/hook/storage/useGetProductByType";
+
+import type { ProductStorage } from "@/src/services/storage/storage.service";
 
 export const inputClassName: string =
   'className="w-full h-11 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg md:h-14 xl:bg-white xl:h-11 xl:px-4 caret-primary-darker';
@@ -32,10 +34,8 @@ interface ProductStorageLocal {
 }
 
 function RoutineMedicine() {
-    const { data: onGetProducts } = useGetProductByType(6)
     const navigation = useNavigation();
-
-    const [childrenSelected, setChildSelected] = useState<number>(1);
+    
     const [expandRemedy, setExpandRemedy] = useState<boolean>(false);
     const [remedyListSelected, setRemedyListSelected] = useState<string>("");
     const [idRemedySelected, setIdRemedySelected] = useState<number>(0);
@@ -46,13 +46,18 @@ function RoutineMedicine() {
     const [dosage, setDosage] = useState<string>("");
     const [description, setDescription] = useState<string>("");
 
-    const [remedyMain] = useState<ProductStorageLocal[]>([
-        { id: 1, product_name: "Paracetamol Gotas", measure: "gts" },
-        { id: 2, product_name: "Ibuprofeno Alívio", measure: "ml" },
-        { id: 3, product_name: "Dipirona Monoidratada", measure: "gts" },
-        { id: 4, product_name: "Amoxicilina Suspensão", measure: "ml" }
-    ]);
-    const [remedy, setRemedy] = useState<ProductStorageLocal[]>(remedyMain);
+    const [remedyMain, setRemedyMain] = useState<ProductStorage[]>([]);
+    const [remedy, setRemedy] = useState<ProductStorage[]>([]);
+    const [childId, setChildId] = useState<number>(0);
+    async function loadChildId() {
+        const storedId = await AsyncStorage.getItem("select_child");
+        if (storedId) {
+          setChildId(Number(storedId));
+        }
+      }
+      loadChildId();
+
+      const { data: onGetProducts } = useGetProductByTypeStorage(6, childId)
 
     useEffect(() => {
         const now = new Date();
@@ -67,9 +72,11 @@ function RoutineMedicine() {
         }
 
         if (onGetProducts) {
-            console.log(onGetProducts)
+            setRemedy(onGetProducts.stock)
+            setRemedyMain(onGetProducts.stock)
         }
     }, [onGetProducts])
+    
 
     function selectRemedy(item: ProductStorageLocal) {
         setIdRemedySelected(item.id);
@@ -103,7 +110,6 @@ function RoutineMedicine() {
             return;
         }
 
-        // Print dos dados salvos localmente
         console.log({
             date_time: dateTime,
             product_id: {
@@ -111,7 +117,7 @@ function RoutineMedicine() {
                 dosage: Number(dosage)
             },
             description,
-            fk_id_child: childrenSelected
+            fk_id_child: childId
         });
 
         Alert.alert("Sucesso", "Medicamento registrado localmente!");
@@ -149,13 +155,13 @@ function RoutineMedicine() {
                     />
 
                     {expandRemedy && (
-                        <View className="absolute w-full max-h-60 top-20 bg-white border border-primary-darker rounded-b-lg p-2 z-50 shadow-lg">
-                            <ScrollView nestedScrollEnabled={true}>
+                        <View className="absolute w-full h-60 top-20 bg-white border border-primary-darker rounded-b-lg p-2 z-50 shadow-lg">
+                            <ScrollView nestedScrollEnabled={true} className="w-full min-h-full">
                                 {remedy.map((it) => (
                                     <TouchableOpacity 
                                         key={it.id} 
                                         onPress={() => selectRemedy(it)}
-                                        className="flex-row items-center w-full h-10 pl-2 gap-2 border-b border-gray-100"
+                                        className="flex-row items-center w-full min-h-10 pl-2 gap-2 border-b border-gray-100"
                                     >
                                         <View className="w-4 h-4 rounded-full border-2 border-accent items-center justify-center" />
                                         <Text className={labelRadioButton}>{it.product_name}</Text>
