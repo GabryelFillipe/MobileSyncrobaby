@@ -64,9 +64,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = (userData: User) => {
-    console.log(
-      "DEBUG: signIn chamado, autenticando usuário e salvando estado...",
-    );
     setUser(userData);
     setIsAuthenticated(true);
   };
