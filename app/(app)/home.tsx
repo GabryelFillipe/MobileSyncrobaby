@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   Image,
   Modal,
   Pressable,
@@ -16,7 +15,6 @@ import {
 import Svg, { Path } from "react-native-svg";
 
 import VaccinesIcon from "../../src/assets/icons/vaccines.svg";
-import { CarouselCard } from "../../src/components/CarouselCard";
 import { CarouselDots } from "../../src/components/CarouselDots";
 import { CategorySection } from "../../src/components/home/CategorySection";
 
@@ -34,33 +32,14 @@ import { Children } from "@/src/services/children/children.service";
 import { useGetChildren } from "../../src/services/hook/children/useGetChildren";
 import DateUtils from "../../src/utils/Date";
 
+import CardCarousel from "../../src/components/articles/CardCarousel";
+import { useGetAgeGroups } from "../../src/services/hook/ageGroup/useGetAgeGroups";
+import { useGetArticleByAge } from "../../src/services/hook/article/useGetArticleByAge";
+import { calculateAgeChild } from "../../src/utils/CalculeAgeGroup";
+
 interface ResponseChild {
   children: Children[];
 }
-
-const articlesData = [
-  {
-    id: 1,
-    textPre: "TUDO SOBRE O ",
-    textHighlight: "PUERPÉRIO",
-    description:
-      "O puerpério é um dos momentos mais intensos e complexos da vida de uma mulher. Ele começa logo após o parto e se estende, geralmente, por seis a oito semanas...",
-  },
-  {
-    id: 2,
-    textPre: "DICAS PARA O ",
-    textHighlight: "SONO",
-    description:
-      "Criar uma rotina de soneca saudável para o seu bebê é fundamental para o desenvolvimento dele e para o descanso de toda a família...",
-  },
-  {
-    id: 3,
-    textPre: "INTRODUÇÃO ",
-    textHighlight: "ALIMENTAR",
-    description:
-      "A fase de introdução alimentar é repleta de descobertas. Saiba como apresentar os primeiros alimentos de forma segura e nutritiva para o seu bebê.",
-  },
-];
 
 export const categoriesData: any[] = [
   { id: 1, title: "Vacinas", icon: VaccinesIcon, path: "Vaccines" },
@@ -79,7 +58,20 @@ export default function Home() {
 
   const [carouselWidth, setCarouselWidth] = useState(width);
 
-  const { data: childrenData, isLoading, isError } = useGetChildren();
+  const { data: childrenData, isLoading } = useGetChildren();
+
+  const { data: onGetAgeGroup } = useGetAgeGroups();
+  const [idAgeGroup, setIdAgeGroup] = useState<number>(1);
+
+  const {
+    data: onGetArticleAge,
+    isLoading: isLoadingArticles,
+    error: articleError,
+  } = useGetArticleByAge(idAgeGroup);
+
+  const articles = onGetArticleAge?.article
+    ? onGetArticleAge.article.slice(0, 3)
+    : [];
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,63 +97,76 @@ export default function Home() {
   const carouselRef = useRef<ScrollView>(null);
   const scrollOffset = useRef(0);
 
+  const extendedArticles =
+    articles.length > 0 ? [...articles, articles[0]] : [];
+
   const handleLayout = (event: any) => {
     const realWidth = event.nativeEvent.layout.width;
     setCarouselWidth(realWidth);
   };
 
   useEffect(() => {
+    if (extendedArticles.length <= 1) return;
+
     const interval = setInterval(() => {
       if (carouselRef.current) {
-        const screenWidth = Dimensions.get("window").width;
-        const maxScroll = screenWidth * (articlesData.length - 1);
+        let currentScroll = scrollOffset.current;
+        let currentIndex = Math.round(currentScroll / carouselWidth);
+        let nextIndex = currentIndex + 1;
 
-        let nextScroll = scrollOffset.current + screenWidth;
-        if (nextScroll > maxScroll + 50) {
-          nextScroll = 0;
+        carouselRef.current.scrollTo({
+          x: nextIndex * carouselWidth,
+          animated: true,
+        });
+
+        if (nextIndex === extendedArticles.length - 1) {
+          setTimeout(() => {
+            if (carouselRef.current) {
+              carouselRef.current.scrollTo({ x: 0, animated: false });
+              scrollOffset.current = 0;
+            }
+          }, 400);
         }
-
-        carouselRef.current.scrollTo({ x: nextScroll, animated: true });
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [extendedArticles.length, carouselWidth]);
 
   useEffect(() => {
     const syncChildData = async () => {
       let storedId = await AsyncStorage.getItem("select_child");
-      if (!storedId) {
+      if (storedId == null) {
         await AsyncStorage.setItem("select_child", "0");
         storedId = "0";
       }
 
-      if (
-        childrenData &&
-        childrenData.children &&
-        Array.isArray(childrenData.children)
-      ) {
-        setListChildren(childrenData);
+      if (!childrenData) {
+        return;
+      }
 
-        const idChild = Number(storedId);
-        const child = childrenData.children.find(
-          (it) => it.id_child === idChild,
-        );
+      setListChildren(childrenData);
 
-        if (child && storedId !== "0") {
-          setSelectedChild(child);
-        } else if (childrenData.children.length > 0) {
-          setSelectedChild(childrenData.children[0]);
-          await AsyncStorage.setItem(
-            "select_child",
-            childrenData.children[0].id_child.toString(),
-          );
-        }
+      const idChild: number = Number(storedId);
+      const child: Children[] = childrenData.children.filter(
+        (it) => it.id_child === idChild,
+      );
+
+      if (child.length > 0 && storedId !== "0") {
+        setSelectedChild(child[0]);
       }
     };
 
     syncChildData();
   }, [childrenData]);
+
+  useEffect(() => {
+    if (onGetAgeGroup?.age_group && selectedChild?.birth_date) {
+      setIdAgeGroup(
+        calculateAgeChild(selectedChild.birth_date, onGetAgeGroup.age_group),
+      );
+    }
+  }, [selectedChild, onGetAgeGroup]);
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
@@ -170,7 +175,10 @@ export default function Home() {
     scrollOffset.current = scrollPosition;
 
     const currentIndex = Math.round(scrollPosition / cardWidth);
-    setActiveIndex(currentIndex);
+
+    if (articles.length > 0) {
+      setActiveIndex(currentIndex % articles.length);
+    }
   };
 
   const handleCategoryNavigation = (path: string) => {
@@ -182,42 +190,63 @@ export default function Home() {
     }
   };
 
+  const handleArticlePage = (e: any, id: number) => {
+    router.push(`/(app)/article/${id}` as any);
+  };
+
   return (
-    <View className="w-full flex flex-col z-91  pb-0 md:py-10 md:gap-8 gap-6 relative">
+    <View className="w-full flex flex-col z-91 pb-0 md:py-10 md:gap-8 gap-6 relative">
       <View className="w-full flex flex-col mb-4">
-        <ScrollView
-          ref={carouselRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          onLayout={handleLayout}
-          className="w-full flex flex-row"
-          contentContainerStyle={{
-            justifyContent: "flex-start",
-            flexGrow: 1,
-          }}
-        >
-          {articlesData.map((article) => (
-            <View
-              key={article.id}
-              style={{ width: carouselWidth }}
-              className="px-6"
+        {isLoadingArticles ? (
+          <View
+            style={{ width: carouselWidth }}
+            className="flex items-center justify-center min-h-22 py-10 px-6"
+          >
+            <ActivityIndicator size="large" color="#9D87D2" />
+          </View>
+        ) : articles.length === 0 ? (
+          <View
+            style={{ width: carouselWidth }}
+            className="flex items-center justify-center min-h-22 py-10 px-6"
+          >
+            <Text className="font-poppins text-primary-text text-center">
+              Nenhum artigo encontrado para esta idade.
+            </Text>
+          </View>
+        ) : (
+          <>
+            <ScrollView
+              ref={carouselRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              pagingEnabled
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+              onLayout={handleLayout}
+              className="w-full flex flex-row"
+              contentContainerStyle={{
+                justifyContent: "flex-start",
+                flexGrow: 1,
+              }}
             >
-              <CarouselCard
-                id={article.id}
-                textPre={article.textPre}
-                textHighlight={article.textHighlight}
-                description={article.description}
-                img={require("../../src/assets/images/artigoImg.png")}
-              />
+              {extendedArticles.map((article, index) => (
+                <View
+                  key={`${article.id_article}-${index}`}
+                  style={{ width: carouselWidth }}
+                  className="px-6"
+                >
+                  <CardCarousel
+                    article={article}
+                    handleArticlePage={handleArticlePage}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+            <View className="mt-4">
+              <CarouselDots activeIndex={activeIndex} total={articles.length} />
             </View>
-          ))}
-        </ScrollView>
-        <View className="mt-4">
-          <CarouselDots activeIndex={activeIndex} total={articlesData.length} />
-        </View>
+          </>
+        )}
       </View>
 
       <View className="w-full flex flex-col grow justify-evenly md:gap-12 px-6 xl:px-0">
@@ -269,7 +298,7 @@ export default function Home() {
               className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col justify-center min-h-22"
             >
               {isLoading ? (
-                <View className="flex flex-row items-center justify-center  gap-3 w-full">
+                <View className="flex flex-row items-center justify-center gap-3 w-full">
                   <ActivityIndicator
                     color={isDesktop ? "#6B7280" : "#FFFFFF"}
                   />
@@ -437,6 +466,16 @@ export default function Home() {
                         "select_child",
                         child.id_child.toString(),
                       );
+                      await AsyncStorage.setItem(
+                        "select_child_name",
+                        child.child_name,
+                      );
+                      if (child.birth_date)
+                        await AsyncStorage.setItem(
+                          "child_birth_date",
+                          child.birth_date,
+                        );
+
                       setIsModalOpen(false);
                     }}
                     style={{

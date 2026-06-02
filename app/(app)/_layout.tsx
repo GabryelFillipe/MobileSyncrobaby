@@ -66,7 +66,7 @@ export const listIcons: IconsNavigation[] = [
     iconDesk: ArticlesIconDesk,
     iconSelected: ArticlesSelected,
     title: "Artigos",
-    path: "/articles",
+    path: "/article",
   },
   { id: 5, icon: vaccineIcon, title: "Vacinas", path: "/vaccines" },
   { id: 6, icon: healthIcon, title: "Saúde", path: "/health" },

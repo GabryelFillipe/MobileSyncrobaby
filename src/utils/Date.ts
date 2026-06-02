@@ -8,6 +8,7 @@ import {
   parseISO,
   subDays,
 } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { ptBR } from "date-fns/locale";
 
 function getHourFormated() {
@@ -15,7 +16,7 @@ function getHourFormated() {
 }
 
 function getDateUTC() {
-  return new Date().toISOString();
+  return formatInTimeZone(new Date(), "America/Sao_Paulo", "yyyy-MM-dd");
 }
 
 function convertISO(hour: string) {
@@ -54,7 +55,10 @@ function formatedDayYear(dataStr: string) {
   return fullDate;
 }
 
-function calculateDaysFormated(dayInitial: Date | string, operator: "more" | "less" | "none") {
+function calculateDaysFormated(
+  dayInitial: Date | string,
+  operator: "more" | "less" | "none",
+) {
   let dateFull: string = "";
 
   if (operator === "more") {
@@ -67,11 +71,10 @@ function calculateDaysFormated(dayInitial: Date | string, operator: "more" | "le
       locale: ptBR,
     });
     dateFull = dateFull.charAt(0).toUpperCase() + dateFull.slice(1);
-  } else if (operator == "none") {
+  } else if (operator === "none") {
     dateFull = format(dayInitial, "EEEE, dd 'de' MMMM", {
       locale: ptBR,
     });
-
     dateFull = dateFull.charAt(0).toUpperCase() + dateFull.slice(1);
   }
 
@@ -108,6 +111,12 @@ function subYearsFormated(startDate: string | undefined) {
   return (months / 12).toFixed(1);
 }
 
+function subMonthsFormated(startDate: string | undefined) {
+  if (!startDate) return 0;
+  const months: number = differenceInMonths(new Date(), parseISO(startDate));
+  return months;
+}
+
 function subDaysFormated(startTime: string) {
   const days: number = differenceInCalendarDays(
     new Date(),
@@ -130,6 +139,7 @@ export default {
   calculateDaysFormated,
   subHoursFormated,
   subYearsFormated,
+  subMonthsFormated,
   subDaysFormated,
   formatedDayYear,
   getTodayFormated,
