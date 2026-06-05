@@ -32,6 +32,7 @@ import { Children } from "@/src/services/children/children.service";
 import { useGetChildren } from "../../src/services/hook/children/useGetChildren";
 import DateUtils from "../../src/utils/Date";
 
+import { LoadingBaby } from "@/src/components/Loading";
 import CardCarousel from "../../src/components/articles/CardCarousel";
 import { useGetAgeGroups } from "../../src/services/hook/ageGroup/useGetAgeGroups";
 import { useGetArticleByAge } from "../../src/services/hook/article/useGetArticleByAge";
@@ -196,13 +197,13 @@ export default function Home() {
 
   return (
     <View className="w-full flex flex-col z-91 pb-0 md:py-10 md:gap-8 gap-6 relative">
-      <View className="w-full flex flex-col mb-4">
+      <View className="w-full flex flex-col ">
         {isLoadingArticles ? (
           <View
             style={{ width: carouselWidth }}
             className="flex items-center justify-center min-h-22 py-10 px-6"
           >
-            <ActivityIndicator size="large" color="#9D87D2" />
+            <LoadingBaby message="Carregando Artigos" />
           </View>
         ) : articles.length === 0 ? (
           <View
@@ -242,7 +243,7 @@ export default function Home() {
                 </View>
               ))}
             </ScrollView>
-            <View className="mt-4">
+            <View className="mt-2">
               <CarouselDots activeIndex={activeIndex} total={articles.length} />
             </View>
           </>
@@ -250,7 +251,7 @@ export default function Home() {
       </View>
 
       <View className="w-full flex flex-col grow justify-evenly md:gap-12 px-6 xl:px-0">
-        <View className="xl:hidden flex items-center justify-center w-full mt-4">
+        <View className="xl:hidden flex items-center justify-center w-full mt-0">
           <CategorySection
             categories={categoriesData}
             onCategoryClick={handleCategoryNavigation}

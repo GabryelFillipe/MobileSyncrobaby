@@ -1,110 +1,109 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, Text, View } from "react-native";
 import Markdown from "react-native-markdown-display";
 
-import SetBack from "../../../src/assets/navigation/setBack.svg";
-
+import { LoadingBaby } from "@/src/components/Loading";
 import type { Article } from "../../../src/services/article/article.service";
 import { useGetSingleArticle } from "../../../src/services/hook/article/useGetSingleArticle";
 
 function ArticleContent() {
-  const router = useRouter();
-
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { data: onGetArticle } = useGetSingleArticle(Number(id));
-
+  const { data: onGetArticle, isLoading } = useGetSingleArticle(Number(id));
   const [article, setArticle] = useState<Article>();
 
   useEffect(() => {
-    if (!onGetArticle) {
-      return;
-    }
+    if (onGetArticle?.article) {
+      const foundArticle = Array.isArray(onGetArticle.article)
+        ? onGetArticle.article[0]
+        : onGetArticle.article;
 
-    if (onGetArticle) {
-      setArticle(onGetArticle.article[0]);
+      if (foundArticle) {
+        setArticle(foundArticle);
+      }
     }
   }, [onGetArticle]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-light">
+        <LoadingBaby message="Carregando artigo..." />
+      </View>
+    );
+  }
+
+  if (!article) {
+    return (
+      <View className="flex-1 justify-center items-center bg-light">
+        <Text className="font-poppins text-primary-text">
+          Artigo não encontrado.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ flexGrow: 1 }}
-      className="bg-light"
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+      className="flex-1 bg-light px-4 pt-6"
     >
-      <View className="flex flex-col gap-5">
-        <View className="hidden xl:flex xl:justify-start xl:w-full">
-          <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()}>
-            <SetBack className="xl:w-auto xl:h-9" />
-          </TouchableOpacity>
-        </View>
-        <View
-          className="flex flex-col h-auto gap-6
-                xl:flex-row-reverse"
-        >
-          <View
-            className="flex flex-col 
-                    xl:w-1/3 xl:gap-5"
-          >
-            <Text
-              className="w-full text-primary-text font-poppins font-semibold text-center text-2xl
-                        xl:text-xl xl:text-start"
-            >
-              {article?.title}
+      <View className="flex flex-col gap-6">
+        <View className="flex flex-col gap-4">
+          <View className="flex flex-col gap-2">
+            <Text className="w-full text-primary-text font-poppins font-bold text-2xl">
+              {article.title}
             </Text>
-            <Text className="hidden xl:block xl:font-nunito xl:text-primary-darker">
-              {article?.description}
+            <Text className="font-nunito text-dark-purple-muted text-base">
+              {article.description}
             </Text>
           </View>
-          {article?.media && (
+
+          {article.media && (
             <Image
               source={{ uri: article.media }}
-              accessibilityLabel="Imagem principal do artigo."
-              className="rounded-lg shadow-purple-sm w-full h-60 object-cover object-center
-                            md:h-120
-                            xl:w-2/3 xl:h-full xl:max-h-120"
+              accessibilityLabel=""
+              className="rounded-lg shadow-purple-sm w-full h-56 object-cover object-center"
             />
           )}
         </View>
-        <View
-          className="flex flex-col w-full
-                xl:pb-10"
-        >
+
+        <View className="flex flex-col w-full pb-10">
           <Markdown
             rules={{
-              heading2: (node, children, parent, styles) => (
+              heading2: (node, children) => (
                 <Text
                   key={node.key}
-                  className="font-poppins text-primary font-semibold text-xl mt-8"
+                  className="font-poppins text-primary font-bold text-xl mt-6"
                 >
                   {children}
                 </Text>
               ),
-              heading3: (node, children, parent, styles) => (
+              heading3: (node, children) => (
                 <Text
                   key={node.key}
-                  className="font-poppins text-primary font-semibold text-lg mt-8"
+                  className="font-poppins text-primary font-bold text-lg mt-5"
                 >
                   {children}
                 </Text>
               ),
-              paragraph: (node, children, parent, styles) => (
+              paragraph: (node, children) => (
                 <Text
                   key={node.key}
-                  className="font-nunito text-primary-text mt-2"
+                  className="font-nunito text-primary-text mt-3 text-base leading-relaxed"
                 >
                   {children}
                 </Text>
               ),
-              bullet_list: (node, children, parent, styles) => (
-                <View key={node.key} className="flex gap-2 mt-2 flex-col">
+              bullet_list: (node, children) => (
+                <View key={node.key} className="flex gap-2 mt-3 flex-col ml-2">
                   {children}
                 </View>
               ),
             }}
           >
-            {article?.content || ""}
+            {article.content || ""}
           </Markdown>
         </View>
       </View>

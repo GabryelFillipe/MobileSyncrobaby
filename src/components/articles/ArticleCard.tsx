@@ -1,73 +1,58 @@
 import React from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 import type { Article } from "../../services/article/article.service.ts";
 
-import Date from "../../utils/Date";
+import DateUtils from "../../utils/Date";
 
 interface Props {
   article: Article;
-  cardArticleDesktop: React.RefObject<View | null>;
 }
 
-function ArticleCard({ article, cardArticleDesktop }: Props) {
+function ArticleCard({ article }: Props) {
   return (
-    <View
-      ref={cardArticleDesktop}
-      key={article.id_article}
-      className="flex w-full min-h-22 md:min-h-24
-        xl:min-w-50 xl:max-w-50 xl:h-full xl:overflow-hidden xl:rounded-sm xl:snap-center xl:hover:shadow-purple-sm xl:hover:scale-102 xl:transition xl:duration-300"
-    >
-      <View
-        className="flex w-full h-full rounded-lg
-        xl:flex-col xl:relative"
-      >
-        <View
-          className="flex justify-center pt-4 w-1/3 h-full bg-primary rounded-l-lg
-            md:w-[28%]
-            xl:relative xl:w-full xl:h-1/2 xl:rounded-bl-none xl:rounded-tl-sm xl:rounded-tr-sm xl:pt-0"
-        >
-          <Text
-            className={`flex justify-center items-center w-22 h-6 font-nunito text-primary-text bg-light font-bold rounded-md
-            md:w-30 md:h-8
-            xl:absolute xl:bg-accent xl:text-white xl:font-normal xl:rounded-sm xl:w-24 xl:h-6 xl:top-2 xl:right-2 ${article.publication_date ? "" : "text-[7px] md:text-[10px] xl:text-[8px]"}`}
-          >
+    <View className="flex flex-row w-full h-30 bg-lilas rounded-lg overflow-hidden shadow-purple-sm">
+      <View className="w-[35%] md:w-[30%] h-full relative bg-primary/20">
+        {article.media ? (
+          <Image
+            source={{ uri: article.media }}
+            accessibilityLabel={`Imagem do artigo ${article.title}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <View className="w-full h-full bg-primary" />
+        )}
+
+        <View className="absolute top-2 left-2 bg-light px-2 py-1 rounded-md">
+          <Text className="font-nunito text-primary-text font-bold text-[9px] md:text-[11px]">
             {article.publication_date
-              ? Date.formatedDate(article.publication_date!)
-              : "Sem data de publicação"}
+              ? DateUtils.formatedDate(article.publication_date)
+              : "Sem data"}
           </Text>
-          <View className="hidden xl:block xl:w-full xl:h-full xl:rounded-t-sm">
-            <Image
-              source={{ uri: article.media! }}
-              accessibilityLabel=""
-              className="xl:w-full xl:h-full xl:rounded-t-sm xl:object-cover xl:object-top"
-            />
-          </View>
         </View>
-        <ScrollView
-          className="flex flex-col w-2/3 h-full bg-lilas py-2 rounded-r-lg
-        md:w-[72%]
-        xl:w-full xl:h-1/2 xl:justify-start xl:rounded-tr-none xl:rounded-b-sm xl:pb-7 xl:overflow-y-auto"
-        >
+      </View>
+
+      <View className="flex-1 flex flex-col justify-between py-2 px-3">
+        <View>
           <Text
-            className="w-full px-4 text-primary font-poppins font-semibold text-[12px]
-            md:text-[16px]
-            xl:text-[14px]"
+            numberOfLines={2}
+            className="text-primary font-poppins font-semibold text-[13px] md:text-[16px] leading-tight"
           >
             {article.title}
           </Text>
           <Text
-            className="w-full px-4 text-dark-purple-muted font-nunito font-normal text-[10px]
-            md:text-[12px]"
+            numberOfLines={2}
+            className="text-dark-purple-muted font-nunito font-normal text-[11px] md:text-[13px] mt-1 leading-tight"
           >
             {article.description}
           </Text>
-          <Text
-            className="w-full px-2 text-end text-primary-text font-poppins font-medium text-[8px] md:text-[10px]
-            xl:absolute xl:flex xl:items-center xl:bg-lilas xl:justify-end xl:bottom-0 xl:h-6 xl:rounded-b-sm"
-          >
-            {article.author}
-          </Text>
-        </ScrollView>
+        </View>
+
+        <Text
+          numberOfLines={1}
+          className="w-full text-right text-primary-text font-poppins font-medium text-[10px] md:text-[12px]"
+        >
+          {article.author}
+        </Text>
       </View>
     </View>
   );
