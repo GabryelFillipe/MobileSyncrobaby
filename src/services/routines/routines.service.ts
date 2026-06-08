@@ -87,7 +87,6 @@ export const deleteRegisterRoutines = async (idRegister: number, type_delete: st
   return response.data;
 };
 
-
 export const insertRegisterSleep = async (data: RegisterSleep): Promise<RegisterSleep> => {
   const response = await api.post<RegisterSleep>("/routines/sleep", data);
   return response.data;
@@ -98,7 +97,6 @@ export const insertRegisterDiaper = async (data: RegisterDiaper): Promise<Regist
   return response.data;
 };
 
-
 export const insertRegisterBath = async (data: RegisterBath): Promise<RegisterBath> => {
   const response = await api.post<RegisterBath>("/routines/bath", data);
   return response.data;
@@ -108,7 +106,6 @@ export const insertRegisterMedication = async (data: RegisterMedication): Promis
   const response = await api.post<RegisterMedication>("/routines/medication", data);
   return response.data;
 };
-
 
 export const insertRegisterFeeding = async (data: RegisterFeeding): Promise<RegisterFeeding> => {
   const response = await api.post<RegisterFeeding>("/routines/feeding", data);

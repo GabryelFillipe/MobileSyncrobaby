@@ -5,22 +5,25 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "reac
 import BtnPrimary from "../../../src/components/BtnPrimary";
 import { InputDefault } from "../../../src/components/InputDefault";
 
+import { useInsertDiaper } from "@/src/services/hook/routines/useInsertDiaper";
+import type { RegisterDiaper } from "@/src/services/routines/routines.service";
+
 export const inputClassName: string =
-  'className="w-full h-11 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg md:h-14 xl:bg-white xl:h-11 xl:px-4 caret-primary-darker';
+    'className="w-full h-11 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg md:h-14 xl:bg-white xl:h-11 xl:px-4 caret-primary-darker';
 export const labelClassName: string =
-  "font-poppins text-primary-darker font-bold md:text-xl";
+    "font-poppins text-primary-darker font-bold md:text-xl";
 export const buttonSubmit: string =
-  "w-[45%] h-10 bg-accent text-white md:w-[40%] md:h-12 xl:w-[25%] xl:h-10";
+    "w-[45%] h-10 bg-accent text-white md:w-[40%] md:h-12 xl:w-[25%] xl:h-10";
 export const buttonCancel: string =
-  "w-[45%] h-10 text-dark-purple font-semibold bg-white shadow-purple-sm md:w-[35%] md:h-12 xl:w-[25%] xl:h-10";
+    "w-[45%] h-10 text-dark-purple font-semibold bg-white shadow-purple-sm md:w-[35%] md:h-12 xl:w-[25%] xl:h-10";
 export const radioButton: string =
-  "appearance-none w-3 h-3 border-2 border-accent rounded-full checked:border-accent checked:border-[6px]";
+    "appearance-none w-3 h-3 border-2 border-accent rounded-full checked:border-accent checked:border-[6px]";
 export const labelRadioButton: string =
-  "font-nunito text-primary-darker font-semibold";
+    "font-nunito text-primary-darker font-semibold";
 export const inputMeasureClass: string =
-  "flex w-18 h-6 bg-lilas border border-primary-darker text-primary-darker shadow-purple-sm rounded-lg md:w-20 md:h-7";
+    "flex w-18 h-6 bg-lilas border border-primary-darker text-primary-darker shadow-purple-sm rounded-lg md:w-20 md:h-7";
 export const listProductsClass: string =
-  "flex flex-col w-full min-h-28 border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2 overflow-y-auto md:gap-4 xl:bg-white xl:min-h-24 xl:max-h-24 xl:px-6";
+    "flex flex-col w-full min-h-28 border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2 overflow-y-auto md:gap-4 xl:bg-white xl:min-h-24 xl:max-h-24 xl:px-6";
 
 
 import Pee from "../../../src/assets/routines/pee.svg";
@@ -41,6 +44,8 @@ interface ProductStorageLocal {
 
 function RoutineDiaper() {
     const navigation = useNavigation();
+
+    const { mutate: onRegisterDiaper } = useInsertDiaper()
 
     const [childrenSelected, setChildSelected] = useState<number>(1);
     const [expandSelectorProduct, setExpandSelectorProduct] = useState<boolean>(false);
@@ -106,7 +111,7 @@ function RoutineDiaper() {
     }
 
     function filterProducts(text: string) {
-        const newData = productsMain.filter(it => 
+        const newData = productsMain.filter(it =>
             it.product_name.toLowerCase().includes(text.toLowerCase())
         );
         setProducts(newData);
@@ -126,7 +131,7 @@ function RoutineDiaper() {
                 };
             });
 
-            const fullDatas = {
+            const fullDatas: RegisterDiaper = {
                 date_time: dateTime,
                 type: typeSelected,
                 product_id: newProductList,
@@ -134,8 +139,16 @@ function RoutineDiaper() {
                 fk_id_child: childrenSelected
             };
 
-            console.log("Dados salvos localmente: ", fullDatas);
-            Alert.alert("Sucesso", "Troca de fralda registrada localmente!");
+            onRegisterDiaper(
+                fullDatas,
+                {
+                    onSuccess: () => {
+                        Alert.alert("Registro de troca de fraldas feito com sucesso!")
+                    }, onError: () => {
+                        Alert.alert("Deu errado hein...")
+                    }
+                }
+            )
         } else {
             Alert.alert("Erro", "Selecione o tipo de registro!");
         }
@@ -147,15 +160,15 @@ function RoutineDiaper() {
             </View>
 
             <View className="flex flex-col w-full h-full p-4 gap-6">
-                
+
                 <View className="flex flex-col">
                     <Text className={labelClassName}>Horário</Text>
-                    <InputDefault 
+                    <InputDefault
                         keyboardType="numeric"
                         onChangeText={(text) => setDateTime(text.replace(/[^0-9:]/g, ''))}
                         value={dateTime}
                         placeholder="00:00"
-                        className={inputClassName} 
+                        className={inputClassName}
                     />
                 </View>
 
@@ -163,12 +176,11 @@ function RoutineDiaper() {
                     <Text className={labelClassName}>Tipo</Text>
                     <View className="flex-row justify-between mt-2">
                         {type_diaper.map((type) => (
-                            <TouchableOpacity 
-                                key={type.id} 
+                            <TouchableOpacity
+                                key={type.id}
                                 onPress={() => setTypeSelected(type.id)}
-                                className={`w-[48%] h-32 bg-lilas border border-primary rounded-lg items-center justify-center gap-2 ${
-                                    typeSelected === type.id ? "bg-lilas-dark/10 border-accent" : ""
-                                }`}
+                                className={`w-[48%] h-32 bg-lilas border border-primary rounded-lg items-center justify-center gap-2 ${typeSelected === type.id ? "bg-lilas-dark/10 border-accent" : ""
+                                    }`}
                             >
                                 <type.img />
                                 <Text className="font-nunito text-primary-darker text-lg font-semibold">{type.type}</Text>
@@ -201,8 +213,8 @@ function RoutineDiaper() {
                                     </View>
                                 ) : (
                                     products.map((product) => (
-                                        <TouchableOpacity 
-                                            key={product.id} 
+                                        <TouchableOpacity
+                                            key={product.id}
                                             onPress={() => addProductList(product)}
                                             className="flex-row items-center w-full h-10 pl-2 gap-2 border-b border-gray-100"
                                         >
@@ -225,7 +237,7 @@ function RoutineDiaper() {
                                 <Text className="text-lilas-dark font-semibold text-base flex-1">{product.product_name}</Text>
                                 <View className="flex-row gap-4 items-center">
                                     <View className={inputMeasureClass}>
-                                        <TextInput 
+                                        <TextInput
                                             keyboardType="numeric"
                                             onChangeText={(val) => onHandleQuantity(product.id, val)}
                                             value={String(product.quantity || 1)}
@@ -234,7 +246,7 @@ function RoutineDiaper() {
                                         <Text className="w-1/3 text-primary-darker text-xs text-center">un</Text>
                                     </View>
                                     <TouchableOpacity onPress={() => removeItemRegister(product.id)}>
-                                        <Trash className="w-5 h-5"/>
+                                        <Trash className="w-5 h-5" />
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -244,7 +256,7 @@ function RoutineDiaper() {
 
                 <View className="flex flex-col">
                     <Text className={labelClassName}>Descrição</Text>
-                    <TextInput 
+                    <TextInput
                         onChangeText={setDescription}
                         value={description}
                         placeholder="Adicione observações sobre a troca..."
@@ -253,16 +265,16 @@ function RoutineDiaper() {
                 </View>
 
                 <View className="flex-row justify-between w-full h-12 mt-4 mb-4">
-                    <BtnPrimary 
-                        onPress={() => navigation.goBack()} 
-                        text="Cancelar" 
-                        className={buttonCancel} 
+                    <BtnPrimary
+                        onPress={() => navigation.goBack()}
+                        text="Cancelar"
+                        className={buttonCancel}
                     />
-                    <BtnPrimary 
-                        onPress={sendDatas} 
-                        text="Registrar" 
-                        textClassName="text-white" 
-                        className={buttonSubmit} 
+                    <BtnPrimary
+                        onPress={sendDatas}
+                        text="Registrar"
+                        textClassName="text-white"
+                        className={buttonSubmit}
                     />
                 </View>
             </View>
@@ -270,4 +282,4 @@ function RoutineDiaper() {
     );
 }
 
-export default RoutineDiaper;
+export default RoutineDiaper
