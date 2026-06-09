@@ -1,9 +1,9 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import MaskInput from 'react-native-mask-input';
 
 import BtnPrimary from "../../../src/components/BtnPrimary";
-import { InputDefault } from "../../../src/components/InputDefault";
 
 import { useInsertDiaper } from "@/src/services/hook/routines/useInsertDiaper";
 import type { RegisterDiaper } from "@/src/services/routines/routines.service";
@@ -26,6 +26,7 @@ export const listProductsClass: string =
     "flex flex-col w-full min-h-28 border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2 overflow-y-auto md:gap-4 xl:bg-white xl:min-h-24 xl:max-h-24 xl:px-6";
 
 
+import DateUtils from "@/src/utils/Date";
 import Pee from "../../../src/assets/routines/pee.svg";
 import Poop from "../../../src/assets/routines/poop.svg";
 import Trash from "../../../src/assets/routines/trashPurple.svg";
@@ -55,7 +56,13 @@ function RoutineDiaper() {
 
     const [dateTime, setDateTime] = useState<string>("");
     const [description, setDescription] = useState<string>("");
-
+    const timeMask = [
+        /[0-2]/,
+        dateTime.charAt(0) === '2' ? /[0-3]/ : /[0-9]/,
+        ':',
+        /[0-5]/,
+        /[0-9]/,
+      ];
     const [productsMain] = useState<ProductStorageLocal[]>([
         { id: 1, product_name: "Fralda Pompom M" },
         { id: 2, product_name: "Lenço Umedecido Huggies" },
@@ -132,13 +139,13 @@ function RoutineDiaper() {
             });
 
             const fullDatas: RegisterDiaper = {
-                date_time: dateTime,
+                date_time: DateUtils.convertISO(dateTime),
                 type: typeSelected,
                 product_id: newProductList,
                 description: description,
                 fk_id_child: childrenSelected
             };
-
+            console.log(fullDatas)
             onRegisterDiaper(
                 fullDatas,
                 {
@@ -163,9 +170,10 @@ function RoutineDiaper() {
 
                 <View className="flex flex-col">
                     <Text className={labelClassName}>Horário</Text>
-                    <InputDefault
+                    <MaskInput
                         keyboardType="numeric"
-                        onChangeText={(text) => setDateTime(text.replace(/[^0-9:]/g, ''))}
+                        mask={timeMask}
+                        onChangeText={(text) => setDateTime(text)}
                         value={dateTime}
                         placeholder="00:00"
                         className={inputClassName}
