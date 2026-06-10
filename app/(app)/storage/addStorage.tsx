@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
+  FlatList,
   Keyboard,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -107,6 +107,7 @@ export default function AddStorage() {
     isError,
     isLoading,
   } = useGetProductByType(typeProduct ?? 0);
+
   useEffect(() => {
     if (onGetType) {
       formatedTypeProduct(onGetType);
@@ -272,37 +273,44 @@ export default function AddStorage() {
               )}
 
               {selectProduct && typeProduct != null && (
-                <ScrollView
-                  className="absolute top-12 z-50 pb-4 flex-col w-full max-h-40 rounded-bl-lg rounded-br-lg border-b border-l border-r border-primary-darker bg-lightest pt-2"
-                  nestedScrollEnabled
-                  keyboardShouldPersistTaps="handled"
-                >
+                <View className="absolute top-12 left-0 right-0 z-50 rounded-bl-lg rounded-br-lg border-b border-l border-r border-primary-darker bg-lightest max-h-40 overflow-hidden">
                   {isLoading && (
                     <ActivityIndicator
                       size="small"
                       color="#9CA3AF"
-                      className="my-2"
+                      className="my-4"
                     />
                   )}
-                  {!isLoading &&
-                    !isError &&
-                    listProducts.map((product) => (
-                      <TouchableOpacity
-                        key={product.id}
-                        className="flex-row items-center w-full h-10 pl-4 border-b border-gray-100"
-                        onPress={() => {
-                          setIdProduct(product.id);
-                          setValueProduct(product.name);
-                          setValue("measurement_unit", product.unit);
-                          setMeasureHigh(product.unit);
-                          setSelectProduct(false);
-                          Keyboard.dismiss();
-                        }}
-                      >
-                        <Text className={labelRadioButton}>{product.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                  {!isLoading && !isError && (
+                    <FlatList
+                      data={listProducts}
+                      keyExtractor={(item) => item.id.toString()}
+                      keyboardShouldPersistTaps="handled"
+                      nestedScrollEnabled={true}
+                      contentContainerStyle={{
+                        paddingBottom: 8,
+                        paddingTop: 8,
+                      }}
+                      renderItem={({ item: product }) => (
+                        <TouchableOpacity
+                          className="flex-row items-center w-full h-10 pl-4 border-b border-gray-100"
+                          onPress={() => {
+                            setIdProduct(product.id);
+                            setValueProduct(product.name);
+                            setValue("measurement_unit", product.unit);
+                            setMeasureHigh(product.unit);
+                            setSelectProduct(false);
+                            Keyboard.dismiss();
+                          }}
+                        >
+                          <Text className={labelRadioButton}>
+                            {product.name}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    />
+                  )}
+                </View>
               )}
             </View>
           </View>

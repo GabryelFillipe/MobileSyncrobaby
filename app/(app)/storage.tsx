@@ -85,9 +85,9 @@ export default function Storage() {
   const { mutate: onDeleteStorage } = useDeleteStorage();
 
   const getStatusColor = (quantity: number) => {
-    if (quantity <= 1) return "var(--color-red-light)";
-    if (quantity <= 3) return "var(--color-yellow-warning)";
-    return "var(--color-green-success)";
+    if (quantity <= 1) return "#ef4444";
+    if (quantity <= 3) return "#f5960a";
+    return "#10b981";
   };
 
   const getStatusLabel = (quantity: number): string => {
