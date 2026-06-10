@@ -1,28 +1,28 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  Alert, Image, ScrollView, Text,
+  Alert,
+  ScrollView, Text,
   TextInput,
   TouchableOpacity, View
 } from "react-native";
-import ChildrenSelect from "../../layouts/ChildrenSelect";
-import { useGetTypeProduct } from "../../services/hooks/product/useGetType.ts";
 // Hooks de serviço (supõe-se que funcionem de forma idêntica no Mobile)
-import { useRegisterFeeding } from "../../services/hooks/routines/useRegisterFeeding";
-import { useGetProductByTypeStorage } from "../../services/hooks/storage/useGetProductByTypeStorage.ts";
-import type { RegisterFeeding } from "../../services/routines/routines.service";
-import type { ProductStorage, TypeProduct } from "../../services/storage/storage.service.ts";
+import { useGetTypeProduct } from "../../../src/services/hook/product/useGetType";
+import { useRegisterFeeding } from "../../../src/services/hook/routines/useInsertFeeding";
+import { useGetProductByTypeStorage } from "../../../src/services/hook/storage/useGetProductByTypeStorage";
+import type { RegisterFeeding } from "../../../src/services/routines/routines.service";
+import type { ProductStorage, TypeProduct } from "../../../src/services/storage/storage.service";
 // Adapte esses imports para os caminhos do seu app mobile
 import RoutineDate from "../../../src/utils/Date";
 
 // Imports de Imagens (Ajuste a extensão se forem .png ou use componentes SVG se necessário)
-const Milk = require('../../../src/assets/routines/milk.svg')
-const BabyFood = require("../../../src/assets/routines/baby_food.png");
-const SolidFood = require("../../../src/assets/routines/solidFood.png");
-const Close = require("../../../src/assets/closeModal.png");
-const setSelector = require("../../../src/assets/setExpandSelector.png");
-const Trash = require("../../../src/assets/routines/trashPurple.png");
+import Close from "../../../src/assets/icons/closeModal.svg";
+import BabyFood from "../../../src/assets/routines/baby_food.svg";
+import Milk from '../../../src/assets/routines/milk.svg';
+import SolidFood from "../../../src/assets/routines/solidFood.svg";
+import Trash from "../../../src/assets/routines/trashPurple.svg";
 
 
 interface DataFeeding {
@@ -62,10 +62,10 @@ export const listProductsClass = "flex-col w-full min-h-[100px] max-h-[150px] bo
 function RoutineFeeding() {
   const route = useRoute<RouteProp<ParamList, 'RoutineFeeding'>>();
   const navigation = useNavigation();
+  const { data: onGetType } = useGetTypeProduct()
   
-  const idChild: number = Number(route.params?.id);
-  
-  const { data: onGetType } = useGetTypeProduct();
+  const [idChild, setChildId] = useState<number>(0);
+
   const { mutate: onInsertFeeding } = useRegisterFeeding();
 
   const {
@@ -78,8 +78,7 @@ function RoutineFeeding() {
       description: "",
     },
   });
-
-  const [childrenSelected, setChildSelected] = useState<number>(idChild);
+;
   const [typeFood, setTypeFood] = useState<number | null>(null);
   const [foodSelected, setFoodSelected] = useState<string>("");
   const [listFood, setListFood] = useState<ProductStorage[]>([]);
@@ -91,7 +90,7 @@ function RoutineFeeding() {
   const [foodsMain, setFoodsMain] = useState<ProductStorage[]>([]);
   const [foods, setFoods] = useState<ProductStorage[]>([]);
 
-  const { data: onGetProduct } = useGetProductByTypeStorage(typeFood, childrenSelected);
+  const { data: onGetProduct } = useGetProductByTypeStorage(typeFood, idChild);
 
   function removeItemRegister(id: number) {
     const newData = listFood.filter(it => it.id !== id);
@@ -108,6 +107,7 @@ function RoutineFeeding() {
   }
 
   function addImageFoodType(type: string) {
+    console.log(type)
     if (type === "Leite e derivados") return Milk;
     if (type === "Alimento sólido") return SolidFood;
     if (type === "Papinha ou purê") return BabyFood;
@@ -157,13 +157,13 @@ function RoutineFeeding() {
 
     if (typeFood !== 0 && typeFood !== null) {
       const fullDatas: RegisterFeeding = {
-        fk_id_child: childrenSelected,
+        fk_id_child: idChild,
         date_time: RoutineDate.convertISO(datas.date_time),
         fk_id_product_type: typeFood,
         description: datas.description,
         product_id: newListFood
       };
-      
+      console.log(fullDatas)
       onInsertFeeding(fullDatas, {
         onSuccess: () => {
           navigation.goBack();
@@ -187,8 +187,15 @@ function RoutineFeeding() {
   }, [typeFood]);
 
   useEffect(() => {
-    if (onGetType) filterDataTypeProduct(onGetType.type);
-  }, [onGetType]);
+    if (!onGetType) {
+      return
+
+    }
+
+    if (onGetType) {
+      filterDataTypeProduct(onGetType.type)
+    }
+  }, [onGetType])
 
   useEffect(() => {
     if (!onGetProduct) {
@@ -200,18 +207,23 @@ function RoutineFeeding() {
     setFoods(onGetProduct.stock);
   }, [onGetProduct]);
 
+  useEffect(() => {
+    async function loadChildId() {
+      const storedId = await AsyncStorage.getItem("select_child");
+      if (storedId) {
+        setChildId(Number(storedId));
+      }
+    }
+    loadChildId();
+  }, []);
+
   return (
     <ScrollView className="flex-1 bg-white px-4 py-2">
-      {/* Seleção do Filho */}
-      <View className="w-full mb-4">
-        <ChildrenSelect idChild={childrenSelected} setChild={setChildSelected} />
-      </View>
-
       {/* Cabeçalho */}
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-darker-purple font-bold text-xl">Registrar alimentação</Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={Close} className="w-6 h-6" />
+          <Close />
         </TouchableOpacity>
       </View>
 
@@ -250,13 +262,7 @@ function RoutineFeeding() {
               className={`w-[30%] h-24 rounded-lg bg-lilas border border-primary items-center justify-center p-1
                 ${typeFood === food.id_product_type ? "bg-purple-100 border-2" : ""}`}
             >
-              {addImageFoodType(food.product_type_name) && (
-                <Image 
-                  source={addImageFoodType(food.product_type_name)} 
-                  className="w-10 h-10 mb-1" 
-                  resizeMode="contain"
-                />
-              )}
+              {/* {<addImageFoodType(food.product_type_name) />} */}
               <Text className="text-center font-nunito text-primary text-xs font-semibold">
                 {food.product_type_name}
               </Text>
@@ -330,7 +336,7 @@ function RoutineFeeding() {
                   <Text className="text-xs">un</Text>
                 </View>
                 <TouchableOpacity onPress={() => removeItemRegister(food.id)}>
-                  <Image source={Trash} className="w-5 h-5" />
+                  <Trash />
                 </TouchableOpacity>
               </View>
             </View>

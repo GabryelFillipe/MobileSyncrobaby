@@ -5,7 +5,7 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "reac
 import BtnPrimary from "../../../src/components/BtnPrimary";
 import { InputDefault } from "../../../src/components/InputDefault";
 
-import { useGetProductByTypeStorage } from "@/src/services/hook/storage/useGetProductByType";
+import { useGetProductByTypeStorage } from "../../../src/services/hook/storage/useGetProductByTypeStorage";
 
 import type { ProductStorage } from "@/src/services/storage/storage.service";
 
