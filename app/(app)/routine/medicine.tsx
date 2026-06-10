@@ -1,11 +1,18 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import BtnPrimary from "../../../src/components/BtnPrimary";
 import { InputDefault } from "../../../src/components/InputDefault";
 
-import { useGetProductByTypeStorage } from "@/src/services/hook/storage/useGetProductByType";
+import { useGetProductByTypeStorage } from "../../../src/services/hook/storage/useGetProductByTypeStorage";
 
 import type { ProductStorage } from "@/src/services/storage/storage.service";
 
@@ -26,196 +33,199 @@ export const inputMeasureClass: string =
 export const listProductsClass: string =
   "flex flex-col w-full min-h-28 border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2 overflow-y-auto md:gap-4 xl:bg-white xl:min-h-24 xl:max-h-24 xl:px-6";
 
-
 interface ProductStorageLocal {
-    id: number;
-    product_name: string;
-    measure: string;
+  id: number;
+  product_name: string;
+  measure: string;
 }
 
 function RoutineMedicine() {
-    const navigation = useNavigation();
-    
-    const [expandRemedy, setExpandRemedy] = useState<boolean>(false);
-    const [remedyListSelected, setRemedyListSelected] = useState<string>("");
-    const [idRemedySelected, setIdRemedySelected] = useState<number>(0);
-    const [disableInput, setDisableInput] = useState<boolean>(true);
-    const [measure, setMeasure] = useState<string>("");
+  const navigation = useNavigation();
 
-    const [dateTime, setDateTime] = useState<string>("");
-    const [dosage, setDosage] = useState<string>("");
-    const [description, setDescription] = useState<string>("");
+  const [expandRemedy, setExpandRemedy] = useState<boolean>(false);
+  const [remedyListSelected, setRemedyListSelected] = useState<string>("");
+  const [idRemedySelected, setIdRemedySelected] = useState<number>(0);
+  const [disableInput, setDisableInput] = useState<boolean>(true);
+  const [measure, setMeasure] = useState<string>("");
 
-    const [remedyMain, setRemedyMain] = useState<ProductStorage[]>([]);
-    const [remedy, setRemedy] = useState<ProductStorage[]>([]);
-    const [childId, setChildId] = useState<number>(0);
-    async function loadChildId() {
-        const storedId = await AsyncStorage.getItem("select_child");
-        if (storedId) {
-          setChildId(Number(storedId));
-        }
-      }
-      loadChildId();
+  const [dateTime, setDateTime] = useState<string>("");
+  const [dosage, setDosage] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
 
-      const { data: onGetProducts } = useGetProductByTypeStorage(6, childId)
+  const [remedyMain, setRemedyMain] = useState<ProductStorage[]>([]);
+  const [remedy, setRemedy] = useState<ProductStorage[]>([]);
+  const [childId, setChildId] = useState<number>(0);
+  async function loadChildId() {
+    const storedId = await AsyncStorage.getItem("select_child");
+    if (storedId) {
+      setChildId(Number(storedId));
+    }
+  }
+  loadChildId();
 
-    useEffect(() => {
-        const now = new Date();
-        const hour = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        setDateTime(`${hour}:${minutes}`);
-    }, []);
+  const { data: onGetProducts } = useGetProductByTypeStorage(6, childId);
 
-    useEffect(() => {
-        if (!onGetProducts) {
-            return
-        }
+  useEffect(() => {
+    const now = new Date();
+    const hour = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    setDateTime(`${hour}:${minutes}`);
+  }, []);
 
-        if (onGetProducts) {
-            setRemedy(onGetProducts.stock)
-            setRemedyMain(onGetProducts.stock)
-        }
-    }, [onGetProducts])
-    
-
-    function selectRemedy(item: ProductStorageLocal) {
-        setIdRemedySelected(item.id);
-        setExpandRemedy(false);
-        setDisableInput(false);
-
-        if (item.product_name && item.measure) {
-            setRemedyListSelected(item.product_name);
-            setMeasure(item.measure);
-        }
+  useEffect(() => {
+    if (!onGetProducts) {
+      return;
     }
 
-    function filterRemedy(text: string) {
-        const newData = remedyMain.filter(it => 
-            it.product_name?.toLowerCase().includes(text.toLowerCase())
-        );
-        setRemedy(newData);
+    if (onGetProducts) {
+      setRemedy(onGetProducts.stock);
+      setRemedyMain(onGetProducts.stock);
     }
+  }, [onGetProducts]);
 
-    function handleRegister() {
-        if (!dateTime) {
-            Alert.alert("Erro", "Selecione a hora!");
-            return;
-        }
-        if (idRemedySelected === 0) {
-            Alert.alert("Erro", "Selecione um medicamento!");
-            return;
-        }
-        if (!dosage) {
-            Alert.alert("Erro", "Informe a quantidade do medicamento!");
-            return;
-        }
+  function selectRemedy(item: ProductStorageLocal) {
+    setIdRemedySelected(item.id);
+    setExpandRemedy(false);
+    setDisableInput(false);
 
-        console.log({
-            date_time: dateTime,
-            product_id: {
-                id: idRemedySelected,
-                dosage: Number(dosage)
-            },
-            description,
-            fk_id_child: childId
-        });
-
-        Alert.alert("Sucesso", "Medicamento registrado localmente!");
+    if (item.product_name && item.measure) {
+      setRemedyListSelected(item.product_name);
+      setMeasure(item.measure);
     }
+  }
 
-    return (
-        <View className="w-full min-h-full">
-            <View className="flex w-full">
-            </View>
-
-            <View className="flex flex-col w-full h-full p-4 gap-12">
-                
-                <View className="flex flex-col">
-                    <Text className={labelClassName}>Horário</Text>
-                    <InputDefault 
-                        keyboardType="numeric"
-                        onChangeText={(text) => setDateTime(text.replace(/[^0-9:]/g, ''))}
-                        value={dateTime}
-                        placeholder="00:00"
-                        className={inputClassName} 
-                    />
-                </View>
-
-                <View className="relative flex flex-col z-50">
-                    <Text className={labelClassName}>Medicação</Text>
-                    <TextInput
-                        onChangeText={(text) => {
-                            setRemedyListSelected(text);
-                            filterRemedy(text);
-                        }}
-                        onFocus={() => setExpandRemedy(true)}
-                        placeholder="Selecione um medicamento"
-                        value={remedyListSelected}
-                        className={`bg-white ${inputClassName}`}
-                    />
-
-                    {expandRemedy && (
-                        <View className="absolute w-full h-60 top-20 bg-white border border-primary-darker rounded-b-lg p-2 z-50 shadow-lg">
-                            <ScrollView nestedScrollEnabled={true} className="w-full min-h-full">
-                                {remedy.map((it) => (
-                                    <TouchableOpacity 
-                                        key={it.id} 
-                                        onPress={() => selectRemedy(it)}
-                                        className="flex-row items-center w-full min-h-10 pl-2 gap-2 border-b border-gray-100"
-                                    >
-                                        <View className="w-4 h-4 rounded-full border-2 border-accent items-center justify-center" />
-                                        <Text className={labelRadioButton}>{it.product_name}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        </View>
-                    )}
-                </View>
-
-                <View className="flex flex-col">
-                    <Text className={labelClassName}>Dose</Text>
-                    <View className={`flex-row items-center justify-between px-2 ${inputClassName}`}>
-                        <TextInput 
-                            editable={!disableInput}
-                            keyboardType="numeric"
-                            onChangeText={(text) => setDosage(text.replace(/[^0-9]/g, ''))}
-                            value={dosage}
-                            placeholder="0"
-                            className="flex-1 h-full p-0 text-primary-darker font-semibold text-lg"
-                        />
-                        <Text className="text-primary-darker pl-1 font-semibold text-lg">{measure}</Text>
-                    </View>
-                </View>
-
-                <View className="flex flex-col">
-                    <Text className={labelClassName}>Descrição</Text>
-                    <TextInput 
-                        onChangeText={setDescription}
-                        value={description}
-                        multiline
-                        numberOfLines={4}
-                        placeholder="Adicione observações sobre a medicação..."
-                        className={`h-40 ${inputClassName}`}
-                        style={{ textAlignVertical: 'top' }}
-                    />
-                </View>
-
-                <View className="flex-row justify-between w-full h-12 mt-4 mb-4">
-                    <BtnPrimary 
-                        onPress={() => navigation.goBack()} 
-                        text="Cancelar" 
-                        className={buttonCancel} 
-                    />
-                    <BtnPrimary 
-                        onPress={handleRegister} 
-                        text="Registrar"
-                        textClassName="text-white" 
-                        className={buttonSubmit} 
-                    />
-                </View>
-            </View>
-        </View>
+  function filterRemedy(text: string) {
+    const newData = remedyMain.filter((it) =>
+      it.product_name?.toLowerCase().includes(text.toLowerCase()),
     );
+    setRemedy(newData);
+  }
+
+  function handleRegister() {
+    if (!dateTime) {
+      Alert.alert("Erro", "Selecione a hora!");
+      return;
+    }
+    if (idRemedySelected === 0) {
+      Alert.alert("Erro", "Selecione um medicamento!");
+      return;
+    }
+    if (!dosage) {
+      Alert.alert("Erro", "Informe a quantidade do medicamento!");
+      return;
+    }
+
+    console.log({
+      date_time: dateTime,
+      product_id: {
+        id: idRemedySelected,
+        dosage: Number(dosage),
+      },
+      description,
+      fk_id_child: childId,
+    });
+
+    Alert.alert("Sucesso", "Medicamento registrado localmente!");
+  }
+
+  return (
+    <View className="w-full min-h-full">
+      <View className="flex w-full"></View>
+
+      <View className="flex flex-col w-full h-full p-4 gap-12">
+        <View className="flex flex-col">
+          <Text className={labelClassName}>Horário</Text>
+          <InputDefault
+            keyboardType="numeric"
+            onChangeText={(text) => setDateTime(text.replace(/[^0-9:]/g, ""))}
+            value={dateTime}
+            placeholder="00:00"
+            className={inputClassName}
+          />
+        </View>
+
+        <View className="relative flex flex-col z-50">
+          <Text className={labelClassName}>Medicação</Text>
+          <TextInput
+            onChangeText={(text) => {
+              setRemedyListSelected(text);
+              filterRemedy(text);
+            }}
+            onFocus={() => setExpandRemedy(true)}
+            placeholder="Selecione um medicamento"
+            value={remedyListSelected}
+            className={`bg-white ${inputClassName}`}
+          />
+
+          {expandRemedy && (
+            <View className="absolute w-full h-60 top-20 bg-white border border-primary-darker rounded-b-lg p-2 z-50 shadow-lg">
+              <ScrollView
+                nestedScrollEnabled={true}
+                className="w-full min-h-full"
+              >
+                {remedy.map((it) => (
+                  <TouchableOpacity
+                    key={it.id}
+                    onPress={() => selectRemedy(it)}
+                    className="flex-row items-center w-full min-h-10 pl-2 gap-2 border-b border-gray-100"
+                  >
+                    <View className="w-4 h-4 rounded-full border-2 border-accent items-center justify-center" />
+                    <Text className={labelRadioButton}>{it.product_name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+
+        <View className="flex flex-col">
+          <Text className={labelClassName}>Dose</Text>
+          <View
+            className={`flex-row items-center justify-between px-2 ${inputClassName}`}
+          >
+            <TextInput
+              editable={!disableInput}
+              keyboardType="numeric"
+              onChangeText={(text) => setDosage(text.replace(/[^0-9]/g, ""))}
+              value={dosage}
+              placeholder="0"
+              className="flex-1 h-full p-0 text-primary-darker font-semibold text-lg"
+            />
+            <Text className="text-primary-darker pl-1 font-semibold text-lg">
+              {measure}
+            </Text>
+          </View>
+        </View>
+
+        <View className="flex flex-col">
+          <Text className={labelClassName}>Descrição</Text>
+          <TextInput
+            onChangeText={setDescription}
+            value={description}
+            multiline
+            numberOfLines={4}
+            placeholder="Adicione observações sobre a medicação..."
+            className={`h-40 ${inputClassName}`}
+            style={{ textAlignVertical: "top" }}
+          />
+        </View>
+
+        <View className="flex-row justify-between w-full h-12 mt-4 mb-4">
+          <BtnPrimary
+            onPress={() => navigation.goBack()}
+            text="Cancelar"
+            className={buttonCancel}
+          />
+          <BtnPrimary
+            onPress={handleRegister}
+            text="Registrar"
+            textClassName="text-white"
+            className={buttonSubmit}
+          />
+        </View>
+      </View>
+    </View>
+  );
 }
 
 export default RoutineMedicine;
