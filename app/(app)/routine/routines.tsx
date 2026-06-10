@@ -9,7 +9,6 @@ import {
 import { addDays, isSameDay, subDays } from 'date-fns';
 
 
-import { InputDefault } from "@/src/components/InputDefault";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateUtils from '../../../src/utils/Date';
 
@@ -25,10 +24,10 @@ import IconMedicineDesktop from '../../../src/assets/routines/medicineDesktopIco
 import IconShowerDesktop from '../../../src/assets/routines/showerDesktopIcon.svg';
 import IconSleepDesktop from '../../../src/assets/routines/sleepDesktopIcon.svg';
 
+import { InputDefault } from "@/src/components/InputDefault";
 import Search from '../../../src/assets/icons/searchLight.svg';
 import SetBlack from '../../../src/assets/routines/setBlack.svg';
 
-import { Link } from "expo-router";
 
 export interface Routines {
     child: number
@@ -273,7 +272,7 @@ function Routines() {
 
     useEffect(() => {
         setDayFunction(DateUtils.date)
-        setDayFilterRotine(DateUtils.getDateFormated())
+        // setDayFilterRotine(DateUtils.getDateFormated())
     }, [])
 
     useEffect(() => {
@@ -289,83 +288,97 @@ function Routines() {
         }
     }, [dayFunction])
 
-    return (
-        <View className="flex flex-col mt-10 w-screen xl:w-full">
-            <View className=" w-full h-11 p-6 flex xl:flex xl:flex-row xl:justify-between xl:h-15">
-                {/* <ChildrenSelect idChild={childrenSelected} setChild={setChildSelected} /> */}
-
-                <View className="relative flex flex-row items-center gap-1 w-full h-14 text-lilas-dark rounded-2xl border-2 shadow-purple-sm border-primary-darker xl:w-67 xl:border-0 xl:justify-center">
-                    <View className="hidden xl:absolute xl:flex xl:flex-row xl:justify-around xl:items-center xl:w-full xl:h-full xl:rounded-2xl xl:bg-white">
+ return (
+        <View className="flex px-6 flex-col xl:w-full">
+            <View className="w-full h-11 xl:flex xl:justify-between xl:h-15">
+                <View className="relative flex gap-1 w-full h-14 text-lilas-dark rounded-2xl border-2 shadow-purple-sm border-primary-darker xl:w-67 xl:h- xl:border-0 xl:justify-center">
+                    <View className="hidden xl:absolute xl:flex xl:justify-around xl:items-center xl:w-full xl:h-full xl:rounded-2xl xl:bg-white">
                         <TouchableOpacity onPress={() => dateRoutine('less')}>
-                            <SetBlack/>
+                            <SetBlack  accessibilityLabel="Icone para voltar um dia na rotina." />
                         </TouchableOpacity>
-                        <Text className="xl:flex xl:justify-center xl:items-center xl:w-52 xl:h-full xl:text-black xl:font-bold xl:text-[14px]">
-                            {dayFilterRotine}
-                        </Text>
+                        <Text className="xl:flex xl:justify-center xl:items-center xl:w-52 xl:h-full xl:text-black xl:font-bold xl:text-[14px]">{dayFilterRotine}</Text>
                         <TouchableOpacity onPress={() => dateRoutine('more')}>
-                        <SetBlack className="rotate-180" />
+                            <SetBlack accessibilityLabel="Icone para avançar um dia na rotina." className="rotate-180" />
                         </TouchableOpacity>
                     </View>
-                    <InputDefault 
-                        onChangeText={(text) => setHourRoutine(text)} 
-                        value={hourRoutine} 
-                        type="date" 
-                        className="w-[calc(100%-30px)] pl-2 xl:w-[55%] xl:font-bold" 
-                    />
+                    <InputDefault onChangeText={setHourRoutine} value={hourRoutine} type="date" className="w-[calc(100%-30px)] pl-2 xl:w-[55%] xl:font-bold" />
                     <TouchableOpacity onPress={valideVisibilityTrash}>
-                        <Search className="w-4 h-auto xl:hidden" />
+                        <Search accessibilityLabel="Icone de busca para pesquisar uma rotina específica pela data." className="w-4 h-auto xl:hidden" />
                     </TouchableOpacity>
                 </View>
             </View>
-            <View className="hidden flex-col xl:flex-row-reverse xl:justify-between xl:w-full xl:h-[calc(100%-60px)] xl:pt-5">
+            <View className="flex flex-col xl:flex-row-reverse xl:justify-between xl:w-full xl:h-[calc(100%-60px)] xl:pt-5">
                 <View className="flex flex-col xl:w-[45%] xl:justify-between">
                     <View className="mt-8 md:mt-5 xl:flex xl:flex-col xl:justify-evenly xl:w-full xl:h-[45%] xl:rounded-sm xl:bg-primary xl:font-poppins">
                         <Text className="hidden xl:flex xl:justify-center xl:w-full xl:text-white xl:font-bold xl:text-[2rem]">Novo Registro</Text>
-                        <View className="flex flex-row justify-between w-full h-22 xl:w-full xl:h-2/3 xl:flex-wrap xl:flex-row xl:justify-center xl:gap-2 xl:px-3">
+                        <View className=" flex-row justify-between w-full h-22 xl:w-full xl:h-2/3 xl:flex-wrap xl:flex-row xl:justify-center xl:gap-2 xl:px-3">
                             {iconsRoutine.map((icon) => (
-                                <Link key={icon.id} href={icon.path as any} asChild>
-                                    <TouchableOpacity className="w-15 h-15 bg-primary rounded-lg md:h-22 md:w-22 xl:w-[30%] xl:h-[34%] xl:bg-lilas xl:rounded-2xl xl:hover:bg-white xl:hover:scale-103 xl:transition xl:duration-300">
-                                        <View className="flex w-full h-full justify-center items-center xl:flex xl:flex-col xl:text-black xl:font-semibold xl:justify-evenly">
-                     
-                                            <icon.imageDesktop className="hidden xl:flex md:w-auto h-11 xl:h-[110%]" />
-                                            <icon.image className="flex xl:hidden md:w-auto h-11 xl:h-[110%]" />
-                                            
-                                            <Text className="hidden xl:flex xl:justify-center xl:w-full xl:text-[80%] xl:font-semibold">{icon.name}</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                </Link>
+                                <TouchableOpacity key={icon.id} onPress={() => {/* Adicione aqui a lógica do router nativo com icon.path */}} className="w-15 h-15 bg-primary rounded-lg md:h-22 md:w-22 xl:w-[30%] xl:h-[34%] xl:bg-lilas xl:rounded-2xl xl:hover:bg-white xl:hover:scale-103 xl:transition xl:duration-300">
+                                    <View className="flex w-full h-full justify-center items-center xl:flex xl:flex-col xl:text-black xl:font-semibold xl:justify-evenly">
+                                        <icon.image accessibilityLabel={icon.description} className="md:w-auto h-11 xl:h-[110%]" />
+                                        <Text className="hidden xl:flex xl:justify-center xl:w-full xl:text-[80%] xl:font-semibold">{icon.name}</Text>
+                                    </View>
+                                </TouchableOpacity>
                             ))}
                         </View>
                     </View>
                     <View className="hidden xl:flex xl:flex-col xl:justify-between xl:w-full xl:h-[40%] xl:p-3 xl:bg-white xl:shadow-purple-md xl:rounded-2xl">
                         <Text className="xl:text-2xl xl:font-semibold xl:font-poppins">Resumo diário</Text>
                         <View className="xl:flex xl:flex-col xl:h-[80%] xl:justify-around">
-                            <View className=" hidden xl:flex xl:flex-row xl:items-center xl:font-nunito xl:font-semibold xl:text-lg">
-                                <IconFeedingDesktop className="xl:w-auto xl:h-8" />
-                                <Text className="xl:ml-3 xl:text-[16px] font-bold">Alimentação: </Text>
+                            <View className="xl:flex xl:items-center xl:font-nunito xl:font-semibold xl:text-lg">
+                                <IconFeedingDesktop accessible={false} className="xl:w-auto xl:h-8" />
+                                <Text className="xl:ml-3 xl:text-[16px]">Alimentação: </Text>
                                 <Text className="xl:ml-1 xl:font-extralight xl:text-[14px]">Comeu {countFooding} vez(es)</Text>
                             </View>
-                            <View className="hidden xl:flex xl:flex-row xl:items-center xl:font-nunito xl:font-semibold xl:text-lg">
-                                <IconSleepDesktop className="xl:w-auto xl:h-7" />
-                                <Text className="xl:ml-3 xl:text-[16px] font-bold">Sono: </Text>
+                            <View className="xl:flex xl:items-center xl:font-nunito xl:font-semibold xl:text-lg">
+                                <IconSleepDesktop accessible={false} className="xl:w-auto xl:h-7" />
+                                <Text className="xl:ml-3 xl:text-[16px]">Sono: </Text>
                                 <Text className="xl:ml-1 xl:font-extralight xl:text-[14px]">Dormiu por {countSleep}</Text>
                             </View>
-                            <View className="hidden xl:flex xl:flex-row xl:items-center xl:font-nunito xl:font-semibold xl:text-lg">
-                                <IconShowerDesktop className="xl:w-auto xl:h-7" />
-                                <Text className="xl:ml-3 xl:text-[16px] font-bold">Banho: </Text>
+                            <View className="xl:flex xl:items-center xl:font-nunito xl:font-semibold xl:text-lg">
+                                <IconShowerDesktop accessible={false} className="xl:w-auto xl:h-7" />
+                                <Text className="xl:ml-3 xl:text-[16px]">Banho: </Text>
                                 <Text className="xl:ml-1 xl:font-extralight xl:text-[14px]">Tomou banho {countShower} vez(es)</Text>
                             </View>
-                            <View className="hidden xl:flex xl:flex-row xl:items-center xl:font-nunito xl:font-semibold xl:text-lg">
-                                <IconDiaperDesktop className="xl:w-auto xl:h-6" />
-                                <Text className="xl:ml-3 xl:text-[16px] font-bold">Troca de fraldas: </Text>
+                            <View className="xl:flex xl:items-center xl:font-nunito xl:font-semibold xl:text-lg">
+                                <IconDiaperDesktop accessible={false} className="xl:w-auto xl:h-6" />
+                                <Text className="xl:ml-3 xl:text-[16px]">Troca de fraldas: </Text>
                                 <Text className="xl:ml-1 xl:font-extralight xl:text-[14px]">Trocou a fralda {countDiaper} vez(es)</Text>
                             </View>
                         </View>
                     </View>
                 </View>
-                <ScrollView className="relative pb-39 md:mt-4 xl:w-[45%] xl:bg-lilas xl:rounded-sm xl:pb-0">
+                <ScrollView className="relative bg-accent pb-39 md:mt-4 xl:w-[45%] xl:bg-lilas xl:rounded-sm xl:pb-0">
                     <View className="flex flex-col w-full gap-4 py-4 pb-8 xl:items-end xl:px-4 xl:py-6 xl:relative xl:gap-6 xl:min-h-full">
-                       
+                        {/* {isLoading && <LoadingBaby text="Buscando rotinas" />}
+
+                        {!isLoading && isError &&
+                            <Text className="text-red-500 font-poppins col-span-full text-center mt-4">
+                                Erro ao carregar a API
+                            </Text>
+                        }
+
+                        {!isLoading && !isError && onGetRoutines?.routines.length == 0 &&
+                            <EmptyState
+                                title="Está tudo tão calmo..."
+                                description="Parece que nenhuma rotina foi cadastrada nesse dia."
+                                buttonText="Registre uma rotina ao lado"
+                                isFullPage={false}
+                                show404Background={false}
+                                onButtonClick={() => { }}
+                            ></EmptyState>
+                        }
+
+                        {!isLoading && !isError && onGetRoutines!.routines.length > 0 &&
+                            (
+                                <>
+                                    <View className="absolute top-0 left-26 w-1 min-h-[55dvh] h-full bg-primary md:min-h-[70dvh] md:left-38 xl:min-h-full xl:bg-white xl:left-[calc(9%+20px)]"></View>
+                                    {routineData.map((routine) => (
+                                        <Card key={`${routine.log_type}${routine.id}`} routineData={routine} visibilityTrash={visibilityTrash} onClick={onClickedCard} onDelete={onDeleteCard} />
+                                    ))}
+                                </>
+                            )
+                        } */}
                     </View>
                 </ScrollView>
             </View>
