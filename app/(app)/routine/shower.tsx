@@ -1,9 +1,14 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import MaskInput from 'react-native-mask-input';
+
 
 import BtnPrimary from "../../../src/components/BtnPrimary";
 import { InputDefault } from "../../../src/components/InputDefault";
+
+import { useRegisterBath } from "@/src/services/hook/routines/useInsertBath";
+import type { RegisterBath } from "@/src/services/routines/routines.service";
 
 export const inputClassName: string =
   'className="w-full h-11 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg md:h-14 xl:bg-white xl:h-11 xl:px-4 caret-primary-darker';
@@ -34,12 +39,28 @@ interface ProductLocal {
 function RoutineShower() {
     const navigation = useNavigation();
 
+    const { mutate: onRegisterBath } = useRegisterBath();
+
     const [childrenSelected, setChildSelected] = useState<number>(1);
     const [expandSelectorProduct, setExpandSelectorProduct] = useState<boolean>(false);
     const [productSelected, setProductSelected] = useState<string>("");
     
     const [startTime, setStartTime] = useState<string>("");
+    const timeMaskStart = [
+        /[0-2]/,
+        startTime.charAt(0) === '2' ? /[0-3]/ : /[0-9]/,
+        ':',
+        /[0-5]/,
+        /[0-9]/,
+    ];
     const [endTime, setEndTime] = useState<string>("");
+    const timeMaskEnd = [
+        /[0-2]/,
+        endTime.charAt(0) === '2' ? /[0-3]/ : /[0-9]/,
+        ':',
+        /[0-5]/,
+        /[0-9]/,
+    ];
     const [timeShower, setTimeShower] = useState<string>("");
     const [description, setDescription] = useState<string>("");
 
@@ -84,16 +105,24 @@ function RoutineShower() {
     }
 
     function handleRegister() {
-        console.log({
-            startTime,
-            endTime,
-            timeShower,
-            products: listProductSelected,
-            description,
-            childrenSelected
-        });
+        const fullData: RegisterBath = {
+            start_time: startTime,
+            end_time: endTime,
+            product_id: listProductSelected,
+            description: description,
+            fk_id_child: childrenSelected
+        };
         
-        Alert.alert("Sucesso", "Banho registrado localmente!");
+        onRegisterBath(
+            fullData,
+            {
+                onSuccess: () => {
+                    Alert.alert("Registro de banho feito com sucesso!")
+                }, onError: () => {
+                    Alert.alert("Erro!")
+                }
+            }
+        );
     }
 
     return (
@@ -105,24 +134,24 @@ function RoutineShower() {
                 
                 <View className="flex flex-col">
                     <Text className={labelClassName}>Horário de início</Text>
-                    <InputDefault 
+                    <MaskInput 
                         keyboardType="numeric"
-                        onChangeText={(text) => setStartTime(text.replace(/[^0-9:]/g, ''))}
+                        mask={timeMaskStart}
+                        onChangeText={(text) => setStartTime(text)}
                         value={startTime}
                         placeholder="00:00"
-                        type="number"
                         className={inputClassName}
                     />
                 </View>
 
                 <View className="flex flex-col">
                     <Text className={labelClassName}>Horário de término</Text>
-                    <InputDefault 
+                    <MaskInput 
                         keyboardType="numeric"
-                        onChangeText={(text) => setEndTime(text.replace(/[^0-9:]/g, ''))}
+                        mask={timeMaskEnd}
+                        onChangeText={(text) => setEndTime(text)}
                         value={endTime}
                         placeholder="00:00"
-                        type="number"
                         className={inputClassName}
                     />
                 </View>

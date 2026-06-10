@@ -28,7 +28,7 @@ export interface RegisterSleep {
 export interface ProductId {
   id: number
   dosage?: number
-  quantity_product: number
+  quantity_product?: number
 }
 
 export interface RegisterDiaper {

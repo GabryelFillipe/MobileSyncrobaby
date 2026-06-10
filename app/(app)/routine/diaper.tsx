@@ -145,14 +145,14 @@ function RoutineDiaper() {
                 description: description,
                 fk_id_child: childrenSelected
             };
-            console.log(fullDatas)
+
             onRegisterDiaper(
                 fullDatas,
                 {
                     onSuccess: () => {
                         Alert.alert("Registro de troca de fraldas feito com sucesso!")
                     }, onError: () => {
-                        Alert.alert("Deu errado hein...")
+                        Alert.alert("Erro!")
                     }
                 }
             )
