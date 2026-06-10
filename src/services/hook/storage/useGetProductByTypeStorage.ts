@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ResponseGetStorage } from "../../storage/storage.service";
 import { getProductsByType } from "../../storage/storage.service";
+import type { ResponseGetStorage } from "../../storage/storage.service"; 
 
 export const useGetProductByTypeStorage = (type_id: number | null, id_child: number) => {
   return useQuery<ResponseGetStorage>({
