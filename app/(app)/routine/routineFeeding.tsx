@@ -2,9 +2,9 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-    Alert, Image, ScrollView, Text,
-    TextInput,
-    TouchableOpacity, View
+  Alert, Image, ScrollView, Text,
+  TextInput,
+  TouchableOpacity, View
 } from "react-native";
 import ChildrenSelect from "../../layouts/ChildrenSelect";
 import { useGetTypeProduct } from "../../services/hooks/product/useGetType.ts";
@@ -14,7 +14,7 @@ import { useGetProductByTypeStorage } from "../../services/hooks/storage/useGetP
 import type { RegisterFeeding } from "../../services/routines/routines.service";
 import type { ProductStorage, TypeProduct } from "../../services/storage/storage.service.ts";
 // Adapte esses imports para os caminhos do seu app mobile
-import RoutineDate from "../../utils/Date.ts";
+import RoutineDate from "../../../src/utils/Date";
 
 // Imports de Imagens (Ajuste a extensão se forem .png ou use componentes SVG se necessário)
 const Milk = require('../../../src/assets/routines/milk.svg')
