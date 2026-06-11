@@ -12,12 +12,14 @@ interface DropdownFilterProps {
   options: FilterOption[];
   selectedFilter: string;
   onSelect: (filter: string) => void;
+  functionExtra?: (option: string) => void
 }
 
 export function DropdownFilter({
   options,
   selectedFilter,
   onSelect,
+  functionExtra
 }: DropdownFilterProps) {
   const [activeFilter, setActiveFilter] = useState(false);
 
@@ -39,6 +41,9 @@ export function DropdownFilter({
               onPress={() => {
                 onSelect(option.label);
                 setActiveFilter(false);
+                if (functionExtra) {
+                  functionExtra(option.label)
+                }
               }}
             >
               <Text className="font-poppins text-primary-text text-base">
