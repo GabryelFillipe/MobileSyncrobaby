@@ -1,24 +1,30 @@
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { insertProduct } from "../../storage/storage.service"; 
-import type { InsertProduct } from "../../storage/storage.service"; 
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "expo-router";
+import { Alert } from "react-native";
+
+import type { InsertProduct } from "../../storage/storage.service";
+import { insertProduct } from "../../storage/storage.service";
 
 export const useInsertStorage = () => {
-    const navigate = useNavigate()
+  const router = useRouter();
 
-    return useMutation({
-        mutationFn: (data: InsertProduct) => insertProduct(data),
+  return useMutation({
+    mutationFn: (data: InsertProduct) => insertProduct(data),
 
-        onSuccess: () => {
-            alert("Produto adicionado com sucesso!")
-            navigate(-1)
-        },
+    onSuccess: () => {
+      Alert.alert("Sucesso", "Produto adicionado com sucesso!");
+      router.back();
+    },
 
-        onError: (error: AxiosError) => {
-            console.log("ERRO DA API:", error.response?.data);
-            console.log("ERRO COMPLETO:", error);
-            return error
-        },
-    });
-}
+    onError: (error: AxiosError) => {
+      console.log("ERRO DA API:", error.response?.data);
+      console.log("ERRO COMPLETO:", error);
+      Alert.alert(
+        "Erro",
+        "Não foi possível adicionar o produto. Tente novamente.",
+      );
+      return error;
+    },
+  });
+};
