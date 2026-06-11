@@ -68,6 +68,16 @@ function Notifications({
     });
   }
 
+  function handleReadSingle(notification: any) {
+    if (!notification.read_status) {
+      readMutation.mutate(notification.id_notification, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["notification"] });
+        },
+      });
+    }
+  }
+
   function getNotificationIconSource(typeId: number) {
     if (typeId === 1) return VaccineIcon;
     if (typeId === 2) return StorageIcon;
@@ -117,13 +127,15 @@ function Notifications({
             contentContainerStyle={{ gap: 16, paddingBottom: 40 }}
           >
             {notifications.map((notification: any) => (
-              <View
+              <TouchableOpacity
                 key={notification.id_notification}
+                activeOpacity={0.9}
+                onPress={() => handleReadSingle(notification)}
                 className={`flex flex-row w-full p-3 gap-3 rounded-md border-2 ${
                   notification.read_status
-                    ? "border-gray-200"
-                    : "border-primary"
-                } bg-white overflow-hidden`}
+                    ? "border-gray-200 bg-white"
+                    : "border-primary bg-lilas"
+                } overflow-hidden`}
               >
                 <View className="flex flex-col justify-start items-center w-auto gap-2">
                   {renderIcon(
@@ -170,13 +182,14 @@ function Notifications({
                   <TouchableOpacity
                     onPress={() => handleDelete(notification.id_notification)}
                     className="p-1"
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     {renderIcon(TrashIcon, {
                       className: "w-auto h-5",
                     })}
                   </TouchableOpacity>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
 
             {notifications.length === 0 && (
