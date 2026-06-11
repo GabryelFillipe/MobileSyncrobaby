@@ -1,6 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, ScrollView, Text, View } from "react-native";
 
@@ -9,6 +10,9 @@ import { InputDefault } from "../../src/components/InputDefault";
 
 import CalcIcon from "../../src/assets/icons/calcAccent.svg";
 import MeasuresIcon from "../../src/assets/icons/measureAccent.svg";
+
+import { useInsertMeasures } from "../../src/services/hook/measures/useInsertMeasures";
+import type { InsertMeasures } from "../../src/services/measures/measures.service";
 
 interface DataMeasures {
   weight: string;
@@ -19,6 +23,19 @@ interface DataMeasures {
 
 export default function UpdateMeasures() {
   const router = useRouter();
+
+  const [idChild, setIdChild] = useState<number>(0);
+  const { mutate: onInsertMeasures } = useInsertMeasures();
+
+  useEffect(() => {
+    async function loadChildId() {
+      const storedId = await AsyncStorage.getItem("select_child");
+      if (storedId) {
+        setIdChild(Number(storedId));
+      }
+    }
+    loadChildId();
+  }, []);
 
   const {
     control,
@@ -34,11 +51,38 @@ export default function UpdateMeasures() {
   });
 
   function sendData(data: DataMeasures) {
-    if (!data.height && !data.weight && !data.head_circumference) {
+    const heightStr = data.height?.trim();
+    const weightStr = data.weight?.trim();
+    const headStr = data.head_circumference?.trim();
+
+    if (!heightStr && !weightStr && !headStr) {
       Alert.alert("Atenção", "Preencha ao menos um campo de medidas!");
       return;
     }
-    console.log("Dados prontos para salvar:", data);
+
+    const parseValue = (val?: string) =>
+      val ? Number(val.replace(",", ".")) : null;
+
+    const newData: InsertMeasures = {
+      height: parseValue(heightStr),
+      weight: parseValue(weightStr),
+      head_circumference: parseValue(headStr),
+      description: data.description,
+      fk_id_child: idChild,
+    };
+
+    onInsertMeasures(newData, {
+      onSuccess: () => {
+        Alert.alert("Sucesso", "Medidas registradas com sucesso!");
+        router.back();
+      },
+      onError: () => {
+        Alert.alert(
+          "Erro",
+          "Não foi possível registrar as medidas. Tente novamente.",
+        );
+      },
+    });
   }
 
   return (
@@ -108,7 +152,7 @@ export default function UpdateMeasures() {
                 </Text>
               </View>
               <Text className="text-gray-400 text-[10px] mt-1 h-4">
-                {errors.weight ? errors.weight.message : "Ultima: 7,2"}
+                {errors.weight ? errors.weight.message : ""}
               </Text>
             </View>
 
@@ -137,7 +181,7 @@ export default function UpdateMeasures() {
                 </Text>
               </View>
               <Text className="text-gray-400 text-[10px] mt-1 h-4">
-                {errors.height ? errors.height.message : "Ultima: 7,2"}
+                {errors.height ? errors.height.message : ""}
               </Text>
             </View>
 
@@ -171,7 +215,7 @@ export default function UpdateMeasures() {
               <Text className="text-gray-400 text-[10px] mt-1 h-4">
                 {errors.head_circumference
                   ? errors.head_circumference.message
-                  : "Ultima: 7,2"}
+                  : ""}
               </Text>
             </View>
           </View>
@@ -201,13 +245,13 @@ export default function UpdateMeasures() {
             <BtnPrimary
               text="Cancelar"
               onPress={() => router.back()}
-              className="flex-1 items-center justify-center h-12 bg-gray-100 border border-gray-200 rounded-lg"
-              textClassName="text-dark-purple font-semibold text-base"
+              className="flex-1 items-center justify-center h-12 bg-white shadow-purple-md  rounded-lg"
+              textClassName="text-primary-text font-bold text-base"
             />
             <BtnPrimary
               text="Registrar"
               onPress={handleSubmit(sendData)}
-              className="flex-1 items-center justify-center h-12 bg-accent rounded-lg shadow-sm"
+              className="flex-1 items-center justify-center h-12 bg-accent rounded-lg shadow-purple-md"
               textClassName="text-white font-semibold text-base"
             />
           </View>

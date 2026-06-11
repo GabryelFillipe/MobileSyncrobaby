@@ -64,7 +64,7 @@ export default function Header() {
     if (p.includes("newanotation")) return "Nova lembrança";
     if (p.includes("anotationdiary")) return "Anotação";
     if (p.includes("diary")) return "Diário";
-    if (p.includes("add-storage")) return "Adicionar produto";
+    if (p.includes("addstorage")) return "Adicionar produto";
     if (p.includes("storage")) return "Estoque";
     if (p.includes("articles")) return "Dicas";
     if (p.includes("article")) return "Artigo";
@@ -82,9 +82,9 @@ export default function Header() {
       return "Editar enfermidade";
 
     if (p.includes("health") || p.includes("illness")) return "Enfermidades";
-
-    if (p.includes("updatemeasure")) return "Atualizar medidas";
-    if (p.includes("measures")) return "Medidas";
+    if (p.includes("updatemeasure") || p.includes("update-measure"))
+      return "Atualizar medidas";
+    if (p.includes("measure")) return "Medidas";
     if (p.includes("addchild") || p.includes("add-child"))
       return "Adicionar Filho(a)";
     if (p.includes("routines")) return "Rotinas";

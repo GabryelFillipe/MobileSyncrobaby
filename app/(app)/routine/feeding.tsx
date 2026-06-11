@@ -1,29 +1,28 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { RouteProp, useRoute } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Alert,
-  ScrollView, Text,
+  ScrollView,
+  Text,
   TextInput,
-  TouchableOpacity, View
+  TouchableOpacity,
+  View,
 } from "react-native";
-// Hooks de serviço (supõe-se que funcionem de forma idêntica no Mobile)
 import { useGetTypeProduct } from "../../../src/services/hook/product/useGetType";
 import { useRegisterFeeding } from "../../../src/services/hook/routines/useInsertFeeding";
 import { useGetProductByTypeStorage } from "../../../src/services/hook/storage/useGetProductByTypeStorage";
 import type { RegisterFeeding } from "../../../src/services/routines/routines.service";
-import type { ProductStorage, TypeProduct } from "../../../src/services/storage/storage.service";
-// Adapte esses imports para os caminhos do seu app mobile
+import type { ProductStorage } from "../../../src/services/storage/storage.service";
 import RoutineDate from "../../../src/utils/Date";
 
-// Imports de Imagens (Ajuste a extensão se forem .png ou use componentes SVG se necessário)
-import Close from "../../../src/assets/icons/closeModal.svg";
-import BabyFood from "../../../src/assets/routines/baby_food.svg";
-import Milk from '../../../src/assets/routines/milk.svg';
-import SolidFood from "../../../src/assets/routines/solidFood.svg";
 import Trash from "../../../src/assets/routines/trashPurple.svg";
 
+import { useRouter } from "expo-router";
+import BabyFood from "../../../src/assets/routines/baby_food.svg";
+import Milk from "../../../src/assets/routines/milk.svg";
+import SolidFood from "../../../src/assets/routines/solidFood.svg";
 
 interface DataFeeding {
   date_time: string;
@@ -44,26 +43,40 @@ interface ListFood {
   quantity_product: number;
 }
 
+interface TypeProductLocal {
+  id_product_type: number;
+  product_type_name: string;
+  icon?: React.ElementType;
+}
+
 type ParamList = {
   RoutineFeeding: { id: string };
 };
 
-// Classes utilitárias adaptadas para NativeWind (Tailwind no React Native)
-export const inputClassName = "w-full h-11 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg justify-center";
-export const labelClassName = "font-poppins text-primary-darker font-bold text-base";
-export const buttonSubmit = "w-[45%] h-10 bg-accent text-white justify-center items-center rounded";
-export const buttonCancel = "w-[45%] h-10 text-dark-purple font-semibold bg-white shadow-sm justify-center items-center rounded border border-purple-200";
-export const radioButton = "w-4 h-4 border-2 border-accent rounded-full items-center justify-center";
+export const inputClassName =
+  "w-full h-11 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg justify-center";
+export const labelClassName =
+  "font-poppins text-primary-darker font-bold text-base";
+export const buttonSubmit =
+  "w-[45%] h-10 bg-accent text-white justify-center items-center shadow-purple-md rounded";
+export const buttonCancel =
+  "w-[45%] h-10 text-primary-text font-bold bg-white shadow-purple-md justify-center items-center rounded";
+export const radioButton =
+  "w-4 h-4 border-2 border-accent rounded-full items-center justify-center";
 export const radioButtonChecked = "w-2 h-2 bg-accent rounded-full";
-export const labelRadioButton = "font-nunito text-primary-darker font-semibold text-sm";
-export const inputMeasureClass = "flex-row w-20 h-8 bg-lilas border border-primary-darker text-primary-darker rounded-lg items-center px-1";
-export const listProductsClass = "flex-col w-full min-h-[100px] max-h-[150px] border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2";
+export const labelRadioButton =
+  "font-nunito text-primary-darker font-semibold text-sm";
+export const inputMeasureClass =
+  "flex-row w-20 h-8 bg-lilas border border-primary-darker text-primary-darker rounded-lg items-center px-1";
+export const listProductsClass =
+  "flex-col w-full min-h-[100px] max-h-[150px] border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2";
 
-function RoutineFeeding() {
-  const route = useRoute<RouteProp<ParamList, 'RoutineFeeding'>>();
-  const navigation = useNavigation();
-  const { data: onGetType } = useGetTypeProduct()
-  
+export default function RoutineFeeding() {
+  const router = useRouter();
+
+  const route = useRoute<RouteProp<ParamList, "RoutineFeeding">>();
+  const { data: onGetType } = useGetTypeProduct();
+
   const [idChild, setChildId] = useState<number>(0);
 
   const { mutate: onInsertFeeding } = useRegisterFeeding();
@@ -78,40 +91,53 @@ function RoutineFeeding() {
       description: "",
     },
   });
-;
   const [typeFood, setTypeFood] = useState<number | null>(null);
   const [foodSelected, setFoodSelected] = useState<string>("");
   const [listFood, setListFood] = useState<ProductStorage[]>([]);
   const [foodExpandSelector, setFoodExpandSelector] = useState<boolean>(false);
   const [valueInputTypeFood, setValueInputTypeFood] = useState<string>(
-    "Escolha o tipo de alimento deste registro"
+    "Escolha o tipo de alimento deste registro",
   );
-  const [food_type, setFoodType] = useState<TypeProduct[]>([]);
+
+  const [food_type, setFoodType] = useState<TypeProductLocal[]>([]);
+
   const [foodsMain, setFoodsMain] = useState<ProductStorage[]>([]);
   const [foods, setFoods] = useState<ProductStorage[]>([]);
 
-  const { data: onGetProduct } = useGetProductByTypeStorage(typeFood, idChild);
+  const { data: onGetProduct } = useGetProductByTypeStorage(
+    typeFood ?? 0,
+    idChild,
+  );
 
   function removeItemRegister(id: number) {
-    const newData = listFood.filter(it => it.id !== id);
+    const newData = listFood.filter((it) => it.id !== id);
     setListFood(newData);
   }
 
-  function filterDataTypeProduct(data: TypeProduct[]) {
-    const finalData = data.filter(it => it.product_type_name.includes("Alimentação"));
-    const formatNameType = finalData.map((type) => {
-      const newName = type.product_type_name.split("(")[1]?.replace(")", "") || type.product_type_name;
-      return { ...type, product_type_name: newName };
-    });
-    setFoodType(formatNameType);
-  }
+  function filterDataTypeProduct(data: any[]) {
+    const finalData = data.filter((it) =>
+      it.product_type_name.includes("Alimentação"),
+    );
 
-  function addImageFoodType(type: string) {
-    console.log(type)
-    if (type === "Leite e derivados") return Milk;
-    if (type === "Alimento sólido") return SolidFood;
-    if (type === "Papinha ou purê") return BabyFood;
-    return null;
+    const formatNameType: TypeProductLocal[] = finalData.map((type) => {
+      const newName =
+        type.product_type_name.split("(")[1]?.replace(")", "") ||
+        type.product_type_name;
+
+      let IconType = undefined;
+
+      if (newName.includes("Leite e derivados")) IconType = Milk;
+      else if (newName.includes("Alimento sólido")) IconType = SolidFood;
+      else if (newName.includes("Papinha ou purê")) IconType = BabyFood;
+
+      return {
+        id_product_type: type.id_product_type,
+        product_type_name: newName,
+        icon: IconType,
+      };
+    });
+
+    setFoodType(formatNameType);
   }
 
   function changeFoodSelected(food: ProductStorage) {
@@ -120,13 +146,13 @@ function RoutineFeeding() {
       return;
     } else {
       setFoodSelected(food.product_name);
-      setListFood([...listFood, food]);
+      setListFood([...listFood, { ...food, quantity: 1 }]);
     }
   }
 
   function clearListFood(food_id: number) {
     setTypeFood(food_id);
-    const selectedType = food_type.find(t => t.id_product_type === food_id);
+    const selectedType = food_type.find((t) => t.id_product_type === food_id);
     if (selectedType) {
       setValueInputTypeFood(selectedType.product_type_name);
     }
@@ -136,9 +162,13 @@ function RoutineFeeding() {
   }
 
   function changeQuantityFood(id: number, quantity: string) {
+    const parsedQuantity = parseInt(quantity.replace(/[^0-9]/g, ""), 10);
     const newListFood = listFood.map((food) => {
       if (food.id === id) {
-        return { ...food, quantity: parseInt(quantity) || 0 };
+        return {
+          ...food,
+          quantity: isNaN(parsedQuantity) ? 0 : parsedQuantity,
+        };
       }
       return food;
     });
@@ -161,16 +191,16 @@ function RoutineFeeding() {
         date_time: RoutineDate.convertISO(datas.date_time),
         fk_id_product_type: typeFood,
         description: datas.description,
-        product_id: newListFood
+        product_id: newListFood,
       };
-      console.log(fullDatas)
+
       onInsertFeeding(fullDatas, {
         onSuccess: () => {
-          navigation.goBack();
+          router.back();
         },
         onError: () => {
           Alert.alert("Erro", "Ih deu errado hein...");
-        }
+        },
       });
     } else {
       Alert.alert("Aviso", "Selecione o tipo de registro!");
@@ -178,7 +208,9 @@ function RoutineFeeding() {
   }
 
   function filterFood(text: string) {
-    const newData = foodsMain.filter(it => it.product_name.toLowerCase().includes(text.toLowerCase()));
+    const newData = foodsMain.filter((it) =>
+      it.product_name.toLowerCase().includes(text.toLowerCase()),
+    );
     setFoods(newData);
   }
 
@@ -187,15 +219,10 @@ function RoutineFeeding() {
   }, [typeFood]);
 
   useEffect(() => {
-    if (!onGetType) {
-      return
-
-    }
-
     if (onGetType) {
-      filterDataTypeProduct(onGetType.type)
+      filterDataTypeProduct(onGetType.type);
     }
-  }, [onGetType])
+  }, [onGetType]);
 
   useEffect(() => {
     if (!onGetProduct) {
@@ -218,16 +245,10 @@ function RoutineFeeding() {
   }, []);
 
   return (
-    <ScrollView className="flex-1 bg-white px-4 py-2">
-      {/* Cabeçalho */}
-      <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-darker-purple font-bold text-xl">Registrar alimentação</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Close />
-        </TouchableOpacity>
-      </View>
-
-      {/* Campo: Horário */}
+    <ScrollView
+      className="flex-1 bg-light px-4 py-2 flex gap-40"
+      keyboardShouldPersistTaps="handled"
+    >
       <View className="flex-col mb-4">
         <Text className={labelClassName}>Horário</Text>
         <Controller
@@ -244,84 +265,102 @@ function RoutineFeeding() {
           )}
         />
         {errors.date_time && (
-          <Text className="text-red-600 text-sm font-nunito">{errors.date_time.message}</Text>
+          <Text className="text-red-600 text-sm font-nunito mt-1">
+            {errors.date_time.message}
+          </Text>
         )}
       </View>
 
-      {/* Tipo de Alimento (Layout Mobile Horizontal/Cards) */}
       <View className="mb-4">
         <Text className={labelClassName}>Tipo de alimento</Text>
         <View className="flex-row justify-between mt-2">
-          {food_type.map((food) => (
-            <TouchableOpacity
-              key={food.id_product_type}
-              onPress={() => {
-                clearListFood(food.id_product_type);
-                setFoodExpandSelector(false);
-              }}
-              className={`w-[30%] h-24 rounded-lg bg-lilas border border-primary items-center justify-center p-1
-                ${typeFood === food.id_product_type ? "bg-purple-100 border-2" : ""}`}
-            >
-              {/* {<addImageFoodType(food.product_type_name) />} */}
-              <Text className="text-center font-nunito text-primary text-xs font-semibold">
-                {food.product_type_name}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {food_type.map((food) => {
+            const IconComponent = food.icon;
+
+            return (
+              <TouchableOpacity
+                key={food.id_product_type}
+                onPress={() => {
+                  clearListFood(food.id_product_type);
+                  setFoodExpandSelector(false);
+                }}
+                className={`w-[30%] h-24 rounded-lg bg-lilas border border-primary items-center justify-center p-1 will-change-variable
+                  ${typeFood === food.id_product_type ? "bg-purple-100 border-2" : ""}`}
+              >
+                {IconComponent && <IconComponent width={32} height={32} />}
+
+                <Text className="text-center font-nunito text-primary text-xs font-semibold mt-1">
+                  {food.product_type_name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
-      {/* Campo Dinâmico: Alimento */}
       <View className="mb-4 relative z-50">
         <Text className={labelClassName}>
-          Alimento <Text className="italic text-xs font-normal">(Apenas itens esgotados!)</Text>
+          Alimento{" "}
+          <Text className="italic text-xs font-normal">
+            (Apenas itens esgotados!)
+          </Text>
         </Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           disabled={typeFood === null}
           onPress={() => setFoodExpandSelector(!foodExpandSelector)}
           className={`${inputClassName} border p-2 bg-gray-50`}
         >
           <Text className="text-lilas-dark">
-            {typeFood === null ? "Selecione um tipo de alimento!" : foodSelected || "Clique para selecionar o produto"}
+            {typeFood === null
+              ? "Selecione um tipo de alimento!"
+              : foodSelected || "Clique para selecionar o produto"}
           </Text>
         </TouchableOpacity>
 
-        {/* Dropdown de Alimentos */}
         {foodExpandSelector && typeFood !== null && (
-          <View className="border border-primary-darker rounded-b-lg bg-white p-2 max-h-40 z-50">
+          <View className="absolute top-18 left-0 right-0 border border-primary-darker rounded-b-lg bg-white p-2 max-h-40 z-49">
             {foods.length === 0 ? (
               <View className="items-center py-4">
-                <Text className="text-sm font-semibold text-gray-500 mb-2">Nenhum produto deste tipo...</Text>
-                <TouchableOpacity 
-                  onPress={() => { /* Navegar para tela de adicionar produto */ }}
-                  className="bg-accent rounded px-4 py-2"
-                >
-                  <Text className="text-white font-semibold">Registrar Produto</Text>
+                <Text className="text-sm font-semibold text-gray-500 mb-2">
+                  Nenhum produto deste tipo...
+                </Text>
+                <TouchableOpacity className="bg-accent rounded px-4 py-2">
+                  <Text className="text-white font-semibold">
+                    Registrar Produto
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              foods.map((food) => (
-                <TouchableOpacity
-                  key={food.id}
-                  onPress={() => changeFoodSelected(food)}
-                  className="flex-row items-center py-2 border-b border-gray-100"
-                >
-                  <View className={radioButton}>
-                    {foodSelected === food.product_name && <View className={radioButtonChecked} />}
-                  </View>
-                  <Text className={`${labelRadioButton} ml-2`}>{food.product_name}</Text>
-                </TouchableOpacity>
-              ))
+              <ScrollView nestedScrollEnabled={true}>
+                {foods.map((food) => (
+                  <TouchableOpacity
+                    key={food.id}
+                    onPress={() => changeFoodSelected(food)}
+                    className="flex-row items-center py-2 border-b border-gray-100"
+                  >
+                    <View className={radioButton}>
+                      {foodSelected === food.product_name && (
+                        <View className={radioButtonChecked} />
+                      )}
+                    </View>
+                    <Text className={`${labelRadioButton} ml-2`}>
+                      {food.product_name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             )}
           </View>
         )}
       </View>
 
-      {/* Lista de Alimentos Adicionados */}
-      <View className={`${listProductsClass} mb-4`}>
+      <View className={`${listProductsClass} mb-4 z-10`}>
         <ScrollView nestedScrollEnabled={true}>
           {listFood.map((food) => (
-            <View key={food.id} className="flex-row justify-between items-center py-1 border-b border-gray-50">
+            <View
+              key={food.id}
+              className="flex-row justify-between items-center py-1 border-b border-gray-50"
+            >
               <Text className="text-lilas-dark font-semibold text-sm flex-1 mr-2">
                 {`${food.product_name} (${food.volume}${food.measure})`}
               </Text>
@@ -330,13 +369,15 @@ function RoutineFeeding() {
                   <TextInput
                     keyboardType="numeric"
                     onChangeText={(val) => changeQuantityFood(food.id, val)}
-                    value={`${food.quantity}`}
-                    className="w-12 text-center p-0 text-sm"
+                    value={food.quantity ? food.quantity.toString() : ""}
+                    placeholder="0"
+                    placeholderTextColor="#9CA3AF"
+                    className="w-12 p-0 text-sm text-primary-darker"
                   />
                   <Text className="text-xs">un</Text>
                 </View>
                 <TouchableOpacity onPress={() => removeItemRegister(food.id)}>
-                  <Trash />
+                  <Trash width={24} height={24} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -344,8 +385,7 @@ function RoutineFeeding() {
         </ScrollView>
       </View>
 
-      {/* Campo: Descrição */}
-      <View className="flex-col mb-6">
+      <View className="flex-col mb-6 z-10">
         <Text className={labelClassName}>Descrição</Text>
         <Controller
           control={control}
@@ -357,23 +397,23 @@ function RoutineFeeding() {
               maxLength={160}
               multiline={true}
               numberOfLines={3}
-              className="w-full border border-primary-darker bg-white rounded px-2 py-1 text-lilas-dark min-h-[60px]"
+              textAlignVertical="top"
+              className="w-full border border-primary-darker bg-white rounded px-2 py-2 text-lilas-dark min-h-20"
             />
           )}
         />
       </View>
 
-      {/* Botões de Ação */}
-      <View className="flex-row justify-between w-full h-12 mb-8">
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()} 
+      <View className="flex-row justify-between w-full h-12 mb-8 z-10">
+        <TouchableOpacity
+          onPress={() => router.back()}
           className={buttonCancel}
         >
           <Text className="text-dark-purple font-semibold">Cancelar</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={handleSubmit(sendDatas)} 
+
+        <TouchableOpacity
+          onPress={handleSubmit(sendDatas)}
           className={buttonSubmit}
         >
           <Text className="text-white font-bold">Registrar</Text>
@@ -382,5 +422,3 @@ function RoutineFeeding() {
     </ScrollView>
   );
 }
-
-export default RoutineFeeding;
