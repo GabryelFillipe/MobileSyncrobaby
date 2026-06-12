@@ -43,11 +43,11 @@ interface ResponseChild {
 }
 
 export const categoriesData: any[] = [
-  { id: 1, title: "Vacinas", icon: VaccinesIcon, path: "Vaccines" },
+  { id: 1, title: "Vacinas", icon: VaccinesIcon, path: "vaccines" },
   { id: 2, title: "Estoque", icon: StorageIcon, path: "storage" },
   { id: 3, title: "Rotinas", icon: RoutinesIcon, path: "routine/sleep" },
   { id: 4, title: "Diário", icon: DiaryIcon, path: "diary" },
-  { id: 5, title: "Medidas", icon: MeasurementsIcon, path: "Measures" },
+  { id: 5, title: "Medidas", icon: MeasurementsIcon, path: "measure" },
   { id: 6, title: "Pediatra", icon: PediatricianIcon, path: "Professional" },
   { id: 7, title: "Saúde", icon: HealthIcon, path: "Health" },
 ];

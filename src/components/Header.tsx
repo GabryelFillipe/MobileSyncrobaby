@@ -25,10 +25,12 @@ export default function Header() {
   const [showToast, setShowToast] = useState<boolean>(false);
   const [newNotifMessage, setNewNotifMessage] = useState<string>("");
 
-  const toastAnimation = useRef(new Animated.Value(-100)).current;
+  const toastAnimation = useRef(new Animated.Value(-150)).current;
 
   const pathname = usePathname();
   const router = useRouter();
+
+  const unreadCount = notifications.filter((n: any) => !n.read_status).length;
 
   useEffect(() => {
     if (notifications.length > previousNotifCount && previousNotifCount !== 0) {
@@ -38,14 +40,14 @@ export default function Header() {
       setShowToast(true);
       Animated.sequence([
         Animated.timing(toastAnimation, {
-          toValue: 50,
-          duration: 300,
+          toValue: 40,
+          duration: 350,
           useNativeDriver: true,
         }),
-        Animated.delay(4000),
+        Animated.delay(1000),
         Animated.timing(toastAnimation, {
-          toValue: -100,
-          duration: 300,
+          toValue: -150,
+          duration: 350,
           useNativeDriver: true,
         }),
       ]).start(() => setShowToast(false));
@@ -64,7 +66,7 @@ export default function Header() {
     if (p.includes("newanotation")) return "Nova lembrança";
     if (p.includes("anotationdiary")) return "Anotação";
     if (p.includes("diary")) return "Diário";
-    if (p.includes("add-storage")) return "Adicionar produto";
+    if (p.includes("addstorage")) return "Adicionar produto";
     if (p.includes("storage")) return "Estoque";
     if (p.includes("articles")) return "Dicas";
     if (p.includes("article")) return "Artigo";
@@ -82,9 +84,9 @@ export default function Header() {
       return "Editar enfermidade";
 
     if (p.includes("health") || p.includes("illness")) return "Enfermidades";
-
-    if (p.includes("updatemeasure")) return "Atualizar medidas";
-    if (p.includes("measures")) return "Medidas";
+    if (p.includes("updatemeasure") || p.includes("update-measure"))
+      return "Atualizar medidas";
+    if (p.includes("measure")) return "Medidas";
     if (p.includes("addchild") || p.includes("add-child"))
       return "Adicionar Filho(a)";
     if (p.includes("routines")) return "Rotinas";
@@ -119,8 +121,16 @@ export default function Header() {
     <View className="flex flex-col justify-between w-full px-6 pt-12 pb-4 bg-light z-50">
       {showToast && (
         <Animated.View
-          style={{ transform: [{ translateY: toastAnimation }] }}
-          className="absolute left-6 right-6 bg-accent rounded-lg p-4 shadow-lg flex flex-col justify-center z-50"
+          style={{
+            transform: [{ translateY: toastAnimation }],
+            zIndex: 100,
+            elevation: 100,
+            position: "absolute",
+            top: 0,
+            left: 24,
+            right: 24,
+          }}
+          className="bg-accent rounded-lg p-4 shadow-lg flex flex-col justify-center"
         >
           <Text className="text-white font-poppins font-bold text-sm">
             Nova Notificação
@@ -175,9 +185,16 @@ export default function Header() {
             hitSlop={{ top: 15, bottom: 15, left: 10, right: 10 }}
             className="relative"
           >
-            {renderIcon(Notifications, { className: "w-7 h-7" })}
-            {notifications.some((n: any) => !n.read_status) && (
-              <View className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+            {renderIcon(Notifications, { className: "w-15 h-15" })}
+            {unreadCount > 0 && (
+              <View className="absolute -top-2 -right-2 min-w-6 h-6 bg-accent px-0.5 rounded-full border border-white justify-center items-center">
+                <Text
+                  numberOfLines={1}
+                  className="text-white font-bold text-[9px] leading-none text-center"
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
             )}
           </TouchableOpacity>
 
