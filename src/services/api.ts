@@ -5,7 +5,7 @@ import { Platform } from "react-native";
 const getBaseUrl = () => {
   if (__DEV__) {
     if (Platform.OS === "android") {
-      return "http://10.0.2.2:8080/syncrobaby/";
+      return "http://192.168.15.122:8080/syncrobaby/";
     }
     return "http://localhost:8080/syncrobaby/";
   }
