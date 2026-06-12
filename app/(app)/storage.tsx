@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,8 +18,10 @@ import Milk from "../../src/assets/routines/milk.svg";
 
 import { EmptyState } from "../../src/components/EmptyState";
 import { LoadingBaby } from "../../src/components/Loading";
+import { RequireChildGuard } from "../../src/components/RequireChildGuard";
 import { ProductCard } from "../../src/components/storage/ProductCard";
 
+import { useChild } from "../../src/context/ChildContext";
 import { useDeleteStorage } from "../../src/services/hook/storage/useDeleteProduct";
 import { useGetStorage } from "../../src/services/hook/storage/useGetStorage";
 import { usePatchStorage } from "../../src/services/hook/storage/usePatchQuantityStorage";
@@ -54,8 +55,8 @@ const getCategoryIcon = (category: string): React.ElementType => {
 
 export default function Storage() {
   const router = useRouter();
+  const { childId } = useChild();
 
-  const [childId, setChildId] = useState<number>(0);
   const [inventoryItems, setInventoryItems] = useState<
     ProductStorage[] | undefined
   >([]);
@@ -64,16 +65,6 @@ export default function Storage() {
   >([]);
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
   const [userInput, setUserInput] = useState("");
-
-  useEffect(() => {
-    async function loadChildId() {
-      const storedId = await AsyncStorage.getItem("select_child");
-      if (storedId) {
-        setChildId(Number(storedId));
-      }
-    }
-    loadChildId();
-  }, []);
 
   const {
     data: onGetStorage,
@@ -166,86 +157,84 @@ export default function Storage() {
     }
   }, [onGetStorage]);
 
-  if (childId === 0) {
-    return <LoadingBaby message="Carregando estoque..." />;
-  }
-
   return (
-    <View className="w-full h-full flex-col gap-6 bg-transparent px-6">
-      <View className="flex-col gap-4">
-        <View className="flex-row items-center w-full h-9 rounded-2xl bg-lilas shadow-purple-sm px-2">
-          <Search width={16} height={16} />
-          <TextInput
-            className="flex-1 pl-2 bg-transparent outline-none border-none font-poppins items-center justify-center flex text-primary"
-            value={userInput}
-            onChangeText={(text) => {
-              setUserInput(text);
-              filteredItems(text);
-            }}
-            style={[{ paddingVertical: 0, textAlignVertical: "center" }]}
-            placeholder="Buscar produto..."
-            placeholderTextColor="#9CA3AF"
-          />
+    <RequireChildGuard>
+      <View className="w-full h-full flex-col gap-6 bg-transparent px-6">
+        <View className="flex-col gap-4">
+          <View className="flex-row items-center w-full h-9 rounded-2xl bg-lilas shadow-purple-sm px-2">
+            <Search width={16} height={16} />
+            <TextInput
+              className="flex-1 pl-2 bg-transparent outline-none border-none font-poppins items-center justify-center flex text-primary"
+              value={userInput}
+              onChangeText={(text) => {
+                setUserInput(text);
+                filteredItems(text);
+              }}
+              style={[{ paddingVertical: 0, textAlignVertical: "center" }]}
+              placeholder="Buscar produto..."
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
         </View>
-      </View>
 
-      <ScrollView
-        className="flex-1 p-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ gap: 16 }}
-      >
-        {isLoading && <LoadingBaby message="Buscando produtos" />}
+        <ScrollView
+          className="flex-1 p-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ gap: 16 }}
+        >
+          {isLoading && <LoadingBaby message="Buscando produtos" />}
 
-        {!isLoading && isError && (
-          <Text className="text-red-500 font-poppins text-center mt-4">
-            Erro ao carregar a API
-          </Text>
-        )}
+          {!isLoading && isError && (
+            <Text className="text-red-500 font-poppins text-center mt-4">
+              Erro ao carregar a API
+            </Text>
+          )}
 
-        {!isLoading && !isError && inventoryItems?.length === 0 && (
-          <EmptyState
-            isFullPage={true}
-            show404Background={false}
-            title="Nenhum produto encontrado!"
-            description="O que acha de adicionar algo no estoque?"
-            buttonText="Adicionar Produto"
-            onButtonClick={() => router.push("/(app)/storage/addStorage")}
-          />
-        )}
+          {!isLoading && !isError && inventoryItems?.length === 0 && (
+            <EmptyState
+              isFullPage={true}
+              show404Background={false}
+              title="Nenhum produto encontrado!"
+              description="O que acha de adicionar algo no estoque?"
+              buttonText="Adicionar Produto"
+              onButtonClick={() => router.push("/(app)/storage/addStorage")}
+            />
+          )}
+
+          {!isLoading &&
+            !isError &&
+            inventoryItems?.map((item) => (
+              <ProductCard
+                key={item.id}
+                item={item}
+                icon={getCategoryIcon(item.type)}
+                getStatusColor={getStatusColor}
+                getStatusLabel={getStatusLabel}
+                toggleCard={toggleCard}
+                expandedCardId={expandedCardId}
+                updateItemQuantity={updateItemQuantity}
+                handleDeleteItem={handleDeleteItem}
+              />
+            ))}
+        </ScrollView>
 
         {!isLoading &&
           !isError &&
-          inventoryItems?.map((item) => (
-            <ProductCard
-              key={item.id}
-              item={item}
-              icon={getCategoryIcon(item.type)}
-              getStatusColor={getStatusColor}
-              getStatusLabel={getStatusLabel}
-              toggleCard={toggleCard}
-              expandedCardId={expandedCardId}
-              updateItemQuantity={updateItemQuantity}
-              handleDeleteItem={handleDeleteItem}
-            />
-          ))}
-      </ScrollView>
-
-      {!isLoading &&
-        !isError &&
-        inventoryItems &&
-        inventoryItems.length > 0 && (
-          <View className="shrink-0 w-full flex-row justify-center pb-6">
-            <TouchableOpacity
-              onPress={() => router.push("/(app)/storage/addStorage")}
-              activeOpacity={0.8}
-              className="flex-row justify-center items-center bg-accent w-[90%] max-w-87 py-3 rounded-xl shadow-md"
-            >
-              <Text className="text-white font-poppins font-bold text-lg">
-                Adicionar produto
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-    </View>
+          inventoryItems &&
+          inventoryItems.length > 0 && (
+            <View className="shrink-0 w-full flex-row justify-center pb-6">
+              <TouchableOpacity
+                onPress={() => router.push("/(app)/storage/addStorage")}
+                activeOpacity={0.8}
+                className="flex-row justify-center items-center bg-accent w-[90%] max-w-87 py-3 rounded-xl shadow-md"
+              >
+                <Text className="text-white font-poppins font-bold text-lg">
+                  Adicionar produto
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+      </View>
+    </RequireChildGuard>
   );
 }

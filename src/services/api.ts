@@ -5,12 +5,13 @@ import { Platform } from "react-native";
 const getBaseUrl = () => {
   if (__DEV__) {
     if (Platform.OS === "android") {
-      return "http://192.168.15.122:8080/syncrobaby/";
+      return "https://syncrobabybackend-hmc2g7cqe9bfbqcr.brazilsouth-01.azurewebsites.net/syncrobaby/";
     }
-    return "http://localhost:8080/syncrobaby/";
+    return "https://syncrobabybackend-hmc2g7cqe9bfbqcr.brazilsouth-01.azurewebsites.net/syncrobaby/";
   }
-  //return "https:syncrobaby/";
+  return "https://syncrobabybackend-hmc2g7cqe9bfbqcr.brazilsouth-01.azurewebsites.net/syncrobaby/";
 };
+
 export const api = axios.create({
   baseURL: getBaseUrl(),
   timeout: 8000,

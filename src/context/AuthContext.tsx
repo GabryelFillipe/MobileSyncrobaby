@@ -1,6 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
+import { getChildren } from "../services/children/children.service";
+
 export interface User {
   id: number;
   name: string;
@@ -33,6 +35,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setIsAuthenticated(false);
           setUser(null);
         } else {
+          try {
+            await getChildren();
+          } catch (apiError: any) {
+            if (
+              apiError.response?.status === 401 ||
+              apiError.response?.status === 403
+            ) {
+              throw new Error("Token expirado ou inválido");
+            }
+          }
+
           const name = await AsyncStorage.getItem("user_name");
           const email = await AsyncStorage.getItem("user_email");
           const photo = await AsyncStorage.getItem("user_photo");
