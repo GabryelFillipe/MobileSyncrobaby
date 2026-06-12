@@ -42,7 +42,7 @@ export interface ResponsePutVaccine {
     vaccine: UpdateVaccine
 }
 
-export const getAllVaccine = async (id_child: number): Promise<ResponseGetAllVaccine> => {
+export const getAllVaccine = async (id_child: number | null): Promise<ResponseGetAllVaccine> => {
     try {
         const response = await api.get<ResponseGetAllVaccine>(`/vaccine/child/${id_child}`);
         return response.data;
