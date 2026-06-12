@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image, Text, View } from "react-native";
 import type { Article } from "../../services/article/article.service.ts";
 
@@ -9,18 +9,25 @@ interface Props {
 }
 
 function ArticleCard({ article }: Props) {
+  const [imageFailed, setImageFailed] = useState(false);
+
   return (
     <View className="flex flex-row w-full h-30 bg-lilas rounded-lg overflow-hidden shadow-purple-sm">
       <View className="w-[35%] md:w-[30%] h-full relative bg-primary/20">
-        {article.media ? (
-          <Image
-            source={{ uri: article.media }}
-            accessibilityLabel={`Imagem do artigo ${article.title}`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <View className="w-full h-full bg-primary" />
-        )}
+        <Image
+          source={
+            !imageFailed &&
+            article.media &&
+            typeof article.media === "string" &&
+            article.media !== "null" &&
+            article.media.trim() !== ""
+              ? { uri: article.media }
+              : require("../../assets/articles/defaultBaby.jpg")
+          }
+          onError={() => setImageFailed(true)}
+          accessibilityLabel={`Imagem do artigo ${article.title}`}
+          className="w-full h-full object-cover"
+        />
 
         <View className="absolute top-2 left-2 bg-light px-2 py-1 rounded-md">
           <Text className="font-nunito text-primary-text font-bold text-[9px] md:text-[11px]">

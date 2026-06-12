@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
   GestureResponderEvent,
   Image,
@@ -23,6 +23,8 @@ interface Props {
 function CardCarousel({ article, articleCarousel, handleArticlePage }: Props) {
   const router = useRouter();
 
+  const [imageFailed, setImageFailed] = useState(false);
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -35,7 +37,18 @@ function CardCarousel({ article, articleCarousel, handleArticlePage }: Props) {
         <View className="w-full flex-1">
           <Image
             accessibilityElementsHidden={true}
-            source={{ uri: article.media! }}
+            source={
+              !imageFailed &&
+              article.media &&
+              typeof article.media === "string" &&
+              article.media !== "null" &&
+              article.media.trim() !== ""
+                ? { uri: article.media }
+                : require("../../assets/articles/defaultBaby.jpg")
+            }
+            onError={(e) => {
+              setImageFailed(true);
+            }}
             accessibilityLabel=""
             className="w-full h-[70%] rounded-t-xl object-top object-cover md:h-[65%] md:object-center"
           />

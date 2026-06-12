@@ -196,202 +196,211 @@ export default function Home() {
   };
 
   return (
-    <View className="w-full flex flex-col z-91 pb-0 md:py-10 md:gap-8 gap-6 relative">
-      <View className="w-full flex flex-col ">
-        {isLoadingArticles ? (
-          <View
-            style={{ width: carouselWidth }}
-            className="flex items-center justify-center min-h-22 py-10 px-6"
-          >
-            <LoadingBaby message="Carregando Artigos" />
-          </View>
-        ) : articles.length === 0 ? (
-          <View
-            style={{ width: carouselWidth }}
-            className="flex items-center justify-center min-h-22 py-10 px-6"
-          >
-            <Text className="font-poppins text-primary-text text-center">
-              Nenhum artigo encontrado para esta idade.
-            </Text>
-          </View>
-        ) : (
-          <>
-            <ScrollView
-              ref={carouselRef}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              pagingEnabled
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-              onLayout={handleLayout}
-              className="w-full flex flex-row"
-              contentContainerStyle={{
-                justifyContent: "flex-start",
-                flexGrow: 1,
-              }}
+    <ScrollView
+      className="w-full"
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 140 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="w-full flex flex-col z-91 md:py-10 md:gap-8 gap-6 relative">
+        <View className="w-full flex flex-col">
+          {isLoadingArticles ? (
+            <View
+              style={{ width: carouselWidth }}
+              className="flex items-center justify-center min-h-22 py-10 px-6"
             >
-              {extendedArticles.map((article, index) => (
-                <View
-                  key={`${article.id_article}-${index}`}
-                  style={{ width: carouselWidth }}
-                  className="px-6"
-                >
-                  <CardCarousel
-                    article={article}
-                    handleArticlePage={handleArticlePage}
-                  />
-                </View>
-              ))}
-            </ScrollView>
-            <View className="mt-2">
-              <CarouselDots activeIndex={activeIndex} total={articles.length} />
+              <LoadingBaby message="Carregando Artigos" />
             </View>
-          </>
-        )}
-      </View>
-
-      <View className="w-full flex flex-col grow justify-evenly md:gap-12 px-6 xl:px-0">
-        <View className="xl:hidden flex items-center justify-center w-full mt-0">
-          <CategorySection
-            categories={categoriesData}
-            onCategoryClick={handleCategoryNavigation}
-          />
+          ) : articles.length === 0 ? (
+            <View
+              style={{ width: carouselWidth }}
+              className="flex items-center justify-center min-h-22 py-10 px-6"
+            >
+              <Text className="font-poppins text-primary-text text-center">
+                Nenhum artigo encontrado para esta idade.
+              </Text>
+            </View>
+          ) : (
+            <>
+              <ScrollView
+                ref={carouselRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+                onLayout={handleLayout}
+                className="w-full flex flex-row"
+                contentContainerStyle={{
+                  justifyContent: "flex-start",
+                  flexGrow: 1,
+                }}
+              >
+                {extendedArticles.map((article, index) => (
+                  <View
+                    key={`${article.id_article}-${index}`}
+                    style={{ width: carouselWidth }}
+                    className="px-6"
+                  >
+                    <CardCarousel
+                      article={article}
+                      handleArticlePage={handleArticlePage}
+                    />
+                  </View>
+                ))}
+              </ScrollView>
+              <View className="mt-2">
+                <CarouselDots
+                  activeIndex={activeIndex}
+                  total={articles.length}
+                />
+              </View>
+            </>
+          )}
         </View>
 
-        <View className="flex text-start flex-col mt-0 gap-2 md:mb-24 md:gap-6">
-          <View className="flex flex-row justify-between items-end xl:px-0">
-            <Pressable>
-              <Text className="text-xl md:text-2xl font-bold font-poppins text-primary-text xl:text-2xl w-full">
-                {isDesktop ? "Meus Filhos" : "Filhos"}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setIsModalOpen(true)}
-              className="hidden xl:flex"
-            >
-              <Text className="text-primary font-bold text-sm font-poppins hover:underline">
-                Gerir Filhos
-              </Text>
-            </Pressable>
+        <View className="w-full flex flex-col md:gap-12 gap-3 px-6 xl:px-0">
+          <View className="xl:hidden flex items-center justify-center w-full mt-0">
+            <CategorySection
+              categories={categoriesData}
+              onCategoryClick={handleCategoryNavigation}
+            />
           </View>
 
-          <View className="w-full bg-lilas xl:bg-transparent shadow-purple-md xl:shadow-none flex flex-col xl:flex-row gap-3 xl:gap-8 px-6 md:px-8 xl:px-0 pt-3 md:pt-4 xl:pt-0 pb-8 md:pb-10 xl:pb-0 rounded-md">
-            <View className="w-full flex flex-row justify-between xl:hidden">
-              <Pressable onPress={() => router.push("/(app)/child/addChild")}>
-                <PlusIcon width={24} height={24} />
+          <View className="flex text-start flex-col mt-0 gap-2 md:mb-24 md:gap-6">
+            <View className="flex  h-8 flex-row justify-between items-end xl:px-0">
+              <Pressable>
+                <Text className="text-xl md:text-2xl font-bold font-poppins text-primary-text xl:text-2xl w-full">
+                  {isDesktop ? "Meus Filhos" : "Filhos"}
+                </Text>
               </Pressable>
-              <Pressable onPress={() => setIsModalOpen(true)}>
-                <ManageChildIcon width={24} height={24} />
+              <Pressable
+                onPress={() => setIsModalOpen(true)}
+                className="hidden xl:flex"
+              >
+                <Text className="text-primary font-bold text-sm font-poppins hover:underline">
+                  Gerir Filhos
+                </Text>
               </Pressable>
             </View>
 
-            <Pressable
-              onPress={() => {
-                if (selectedChild.id_child !== 0) {
-                  router.push({
-                    pathname: "/(app)/child/[id]",
-                    params: { id: selectedChild.id_child },
-                  });
-                } else {
-                  router.push("/(app)/child/addChild");
-                }
-              }}
-              className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col justify-center min-h-22"
-            >
-              {isLoading ? (
-                <View className="flex flex-row items-center justify-center gap-3 w-full">
-                  <ActivityIndicator
-                    color={isDesktop ? "#6B7280" : "#FFFFFF"}
-                  />
-                  <Text className="font-poppins font-bold text-light xl:text-primary-text text-base">
-                    Carregando...
-                  </Text>
-                </View>
-              ) : typeof childrenData === "string" ? (
-                <View className="flex flex-row items-center justify-center w-full">
-                  <Text className="font-poppins font-bold text-light xl:text-primary-text text-base text-center">
-                    {childrenData}
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  <View className="flex flex-row gap-4 md:gap-6 items-center w-full">
-                    <View className="bg-lilas rounded-full p-1 xl:p-0 xl:bg-transparent">
-                      {selectedChild.photo && selectedChild.photo !== "" ? (
-                        <Image
-                          source={{ uri: selectedChild.photo }}
-                          className="w-11 h-11 md:w-14 md:h-14 xl:w-12 xl:h-12 rounded-full"
-                        />
-                      ) : (
-                        <ChildrenPhoto width={44} height={44} />
-                      )}
-                    </View>
-                    <View className="flex flex-col justify-center flex-1">
-                      <Text className="font-poppins font-bold text-light xl:text-primary-text text-base md:text-xl xl:text-lg leading-tight">
-                        {selectedChild.child_name}
-                      </Text>
-                      {selectedChild.id_child !== 0 &&
-                        selectedChild.birth_date && (
-                          <Text className="font-poppins text-sm md:text-base xl:text-sm text-lilas-medium xl:text-primary-text/70">
-                            {`${DateUtils.subYearsFormated(selectedChild.birth_date)} anos`}
-                          </Text>
-                        )}
-                    </View>
-                    <View className="hidden xl:flex p-2">
-                      <Svg
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2.5}
-                        stroke="currentColor"
-                        className="w-6 h-6 text-gray-500"
-                      >
-                        <Path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                        />
-                      </Svg>
-                    </View>
-                  </View>
-
-                  {selectedChild.id_child !== 0 && (
-                    <View className="hidden xl:flex flex-row items-center gap-2 mt-6 pt-4 border-t border-gray-100 w-full">
-                      <Svg
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        className="w-5 h-5 text-gray-400"
-                      >
-                        <Path
-                          fillRule="evenodd"
-                          d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"
-                          clipRule="evenodd"
-                        />
-                      </Svg>
-                      <Text className="text-gray-400 text-xs font-poppins">
-                        Ultima Alimentação:
-                      </Text>
-                      <Text className="text-primary-text font-bold text-xs ml-auto">
-                        A ser implementado
-                      </Text>
-                    </View>
-                  )}
-                </>
-              )}
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.push("/add-child" as any)}
-              className="hidden xl:flex w-full xl:w-50 border-2 border-dashed border-primary/40 bg-lilas/20 rounded-xl flex-col items-center justify-center gap-3 hover:bg-lilas/40 transition-colors py-4"
-            >
-              <View className="w-12 h-12 bg-light rounded-full flex items-center justify-center shadow-sm">
-                <Text className="text-primary text-3xl font-bold leading-none mb-1">
-                  +
-                </Text>
+            <View className="w-full bg-lilas xl:bg-transparent shadow-purple-md xl:shadow-none flex flex-col xl:flex-row gap-3 xl:gap-8 px-6 md:px-8 xl:px-0 pt-3 md:pt-4 xl:pt-0 pb-8 md:pb-10 xl:pb-0 rounded-md">
+              <View className="w-full flex flex-row justify-between xl:hidden">
+                <Pressable onPress={() => router.push("/(app)/child/addChild")}>
+                  <PlusIcon width={24} height={24} />
+                </Pressable>
+                <Pressable onPress={() => setIsModalOpen(true)}>
+                  <ManageChildIcon width={24} height={24} />
+                </Pressable>
               </View>
-              <Text className="text-primary font-poppins text-base font-semibold">
-                Adicionar Filho
-              </Text>
-            </Pressable>
+
+              <Pressable
+                onPress={() => {
+                  if (selectedChild.id_child !== 0) {
+                    router.push({
+                      pathname: "/(app)/child/[id]",
+                      params: { id: selectedChild.id_child },
+                    });
+                  } else {
+                    router.push("/(app)/child/addChild");
+                  }
+                }}
+                className="w-full xl:w-[320px] bg-primary xl:bg-light xl:border xl:border-gray-200 xl:border-t-4 xl:border-t-primary py-1 md:py-4 xl:py-4 px-6 md:px-8 xl:px-6 rounded-sm shadow-purple-md xl:shadow-sm flex flex-col justify-center min-h-22"
+              >
+                {isLoading ? (
+                  <View className="flex flex-row items-center justify-center gap-3 w-full">
+                    <ActivityIndicator
+                      color={isDesktop ? "#6B7280" : "#FFFFFF"}
+                    />
+                    <Text className="font-poppins font-bold text-light xl:text-primary-text text-base">
+                      Carregando...
+                    </Text>
+                  </View>
+                ) : typeof childrenData === "string" ? (
+                  <View className="flex flex-row items-center justify-center w-full">
+                    <Text className="font-poppins font-bold text-light xl:text-primary-text text-base text-center">
+                      {childrenData}
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    <View className="flex flex-row gap-4 md:gap-6 items-center w-full">
+                      <View className="bg-lilas rounded-full p-1 xl:p-0 xl:bg-transparent">
+                        {selectedChild.photo && selectedChild.photo !== "" ? (
+                          <Image
+                            source={{ uri: selectedChild.photo }}
+                            className="w-11 h-11 md:w-14 md:h-14 xl:w-12 xl:h-12 rounded-full"
+                          />
+                        ) : (
+                          <ChildrenPhoto width={44} height={44} />
+                        )}
+                      </View>
+                      <View className="flex flex-col justify-center flex-1">
+                        <Text className="font-poppins font-bold text-light xl:text-primary-text text-base md:text-xl xl:text-lg leading-tight">
+                          {selectedChild.child_name}
+                        </Text>
+                        {selectedChild.id_child !== 0 &&
+                          selectedChild.birth_date && (
+                            <Text className="font-poppins text-sm md:text-base xl:text-sm text-lilas-medium xl:text-primary-text/70">
+                              {`${DateUtils.subYearsFormated(selectedChild.birth_date)} anos`}
+                            </Text>
+                          )}
+                      </View>
+                      <View className="hidden xl:flex p-2">
+                        <Svg
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2.5}
+                          stroke="currentColor"
+                          className="w-6 h-6 text-gray-500"
+                        >
+                          <Path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+                          />
+                        </Svg>
+                      </View>
+                    </View>
+
+                    {selectedChild.id_child !== 0 && (
+                      <View className="hidden xl:flex flex-row items-center gap-2 mt-6 pt-4 border-t border-gray-100 w-full">
+                        <Svg
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          className="w-5 h-5 text-gray-400"
+                        >
+                          <Path
+                            fillRule="evenodd"
+                            d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"
+                            clipRule="evenodd"
+                          />
+                        </Svg>
+                        <Text className="text-gray-400 text-xs font-poppins">
+                          Ultima Alimentação:
+                        </Text>
+                        <Text className="text-primary-text font-bold text-xs ml-auto">
+                          A ser implementado
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push("/add-child" as any)}
+                className="hidden xl:flex w-full xl:w-50 border-2 border-dashed border-primary/40 bg-lilas/20 rounded-xl flex-col items-center justify-center gap-3 hover:bg-lilas/40 transition-colors py-4"
+              >
+                <View className="w-12 h-12 bg-light rounded-full flex items-center justify-center shadow-sm">
+                  <Text className="text-primary text-3xl font-bold leading-none mb-1">
+                    +
+                  </Text>
+                </View>
+                <Text className="text-primary font-poppins text-base font-semibold">
+                  Adicionar Filho
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -535,6 +544,6 @@ export default function Home() {
           </View>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }

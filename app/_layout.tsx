@@ -3,6 +3,7 @@ import { Slot, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
+import { ChildProvider } from "../src/context/ChildContext"; // <- Importe aqui
 
 const queryClient = new QueryClient();
 
@@ -38,7 +39,9 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RootLayoutNav />
+        <ChildProvider>
+          <RootLayoutNav />
+        </ChildProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

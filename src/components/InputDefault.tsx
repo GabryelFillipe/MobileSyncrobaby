@@ -42,6 +42,7 @@ export function InputDefault({
       keyboardType={keyboardType}
       secureTextEntry={secureTextEntry}
       value={value || ""}
+      placeholderTextColor="#6B7280"
       style={[{ paddingVertical: 0, textAlignVertical: "center" }, style]}
       {...rest}
     />

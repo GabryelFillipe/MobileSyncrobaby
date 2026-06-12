@@ -12,6 +12,7 @@ function ArticleContent() {
 
   const { data: onGetArticle, isLoading } = useGetSingleArticle(Number(id));
   const [article, setArticle] = useState<Article>();
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
     if (onGetArticle?.article) {
@@ -60,13 +61,20 @@ function ArticleContent() {
             </Text>
           </View>
 
-          {article.media && (
-            <Image
-              source={{ uri: article.media }}
-              accessibilityLabel=""
-              className="rounded-lg shadow-purple-sm w-full h-56 object-cover object-center"
-            />
-          )}
+          <Image
+            source={
+              !imageFailed &&
+              article.media &&
+              typeof article.media === "string" &&
+              article.media !== "null" &&
+              article.media.trim() !== ""
+                ? { uri: article.media }
+                : require("../../../src/assets/articles/defaultBaby.jpg")
+            }
+            onError={() => setImageFailed(true)}
+            accessibilityLabel={`Imagem do artigo ${article.title}`}
+            className="rounded-lg shadow-purple-sm w-full h-56 object-cover object-center"
+          />
         </View>
 
         <View className="flex flex-col w-full pb-10">

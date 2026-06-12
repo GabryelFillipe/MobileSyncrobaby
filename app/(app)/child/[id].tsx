@@ -1,4 +1,4 @@
-import { LoadingBaby } from "@/src/components/Loading";
+import { BlurView } from "expo-blur";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import ViewShot from "react-native-view-shot";
+
 import EditIcon from "../../../src/assets/icons/editIcon.svg";
 import ExportIcon from "../../../src/assets/icons/exportIcon.svg";
 import Blood from "../../../src/assets/profileChildren/blood.svg";
@@ -25,10 +26,13 @@ import Sick from "../../../src/assets/profileChildren/sick.svg";
 import Vaccine from "../../../src/assets/profileChildren/vaccine.svg";
 import Weight from "../../../src/assets/profileChildren/weight.svg";
 import Trash from "../../../src/assets/routines/trashPurple.svg";
+
 import BtnPrimary from "../../../src/components/BtnPrimary";
 import { InputDefault } from "../../../src/components/InputDefault";
+import { LoadingBaby } from "../../../src/components/Loading";
 import Perfil from "../../../src/components/Perfil";
 import AtributesProfile from "../../../src/components/profileChildren/AtributesProfile";
+
 import type {
   Children,
   VerifyDesactivate,
@@ -36,6 +40,8 @@ import type {
 import { useDeactivateChild } from "../../../src/services/hook/children/useDeactivateChild";
 import { useGetChild } from "../../../src/services/hook/children/useGetChild";
 import { useUpdateChild } from "../../../src/services/hook/children/useUpdateChild";
+import { useGetIllness } from "../../../src/services/hook/illness/useGetIllness";
+import { useGetAllVaccine } from "../../../src/services/hook/vaccine/useGetAllVaccine";
 import DateUtils from "../../../src/utils/Date";
 
 export interface DataChild extends Children {
@@ -63,6 +69,8 @@ export default function ProfileChildren() {
   const idChild = Number(params.id);
 
   const { data: childData } = useGetChild(idChild);
+  const { data: onGetAllVaccines } = useGetAllVaccine(idChild);
+  const { data: onGetillness } = useGetIllness(idChild, true);
   const { mutate: updateChild, isPending: isUpdating } = useUpdateChild();
   const { mutate: onDeleteChild, isPending: isDeleting } = useDeactivateChild();
 
@@ -79,8 +87,8 @@ export default function ProfileChildren() {
     { title: "Data de nascimento:", img: DateBirth },
     { title: "Peso:", img: Weight, path: "/update-measures" },
     { title: "Altura:", img: Height, path: "/update-measures" },
-    { title: "Vacinação:", img: Vaccine, path: "/vaccines" },
-    { title: "Enfermidades:", img: Sick, path: "/health" },
+    { title: "Última vacina:", img: Vaccine, path: "/vaccines" },
+    { title: "Última doença:", img: Sick, path: "/health" },
     { title: "Tipo sanguíneo:", img: Blood },
   ]);
 
@@ -103,12 +111,45 @@ export default function ProfileChildren() {
   useEffect(() => {
     if (childData?.child && childData.child.length > 0) {
       const child = childData.child[0];
+
+      let lastVaccineName = "Nenhuma vacina aplicada";
+      if (onGetAllVaccines?.vaccine) {
+        const applied = onGetAllVaccines.vaccine
+          .flatMap((g: any) => g.vaccines)
+          .filter((v: any) => v.application_status === 1 && v.application_date);
+
+        if (applied.length > 0) {
+          applied.sort(
+            (a: any, b: any) =>
+              new Date(b.application_date).getTime() -
+              new Date(a.application_date).getTime(),
+          );
+          lastVaccineName = applied[0].vaccine;
+        }
+      }
+
+      let lastSickName = "Nenhum registro";
+      if (onGetillness?.illness) {
+        const sickList = [...onGetillness.illness].filter(
+          (s: any) => s.start_date,
+        );
+
+        if (sickList.length > 0) {
+          sickList.sort(
+            (a: any, b: any) =>
+              new Date(b.start_date).getTime() -
+              new Date(a.start_date).getTime(),
+          );
+          lastSickName = sickList[0].illness_name || sickList[0].illness_name;
+        }
+      }
+
       const newData: DataChild = {
         ...child,
         birth_date: child.birth_date.split("T")[0],
         height: Math.round(child.height),
-        vaccine: "Nenhuma vacina aplicada",
-        sick: "Nenhuma enfermidade",
+        vaccine: lastVaccineName,
+        sick: lastSickName,
       };
 
       setDataChildren(newData);
@@ -127,15 +168,15 @@ export default function ProfileChildren() {
             it.value = DateUtils.formatedDate(newData.birth_date);
           else if (it.title === "Peso:") it.value = `${newData.weight} Kg`;
           else if (it.title === "Altura:") it.value = `${newData.height} cm`;
-          else if (it.title === "Vacinação:") it.value = newData.vaccine;
-          else if (it.title === "Enfermidades:") it.value = newData.sick;
+          else if (it.title === "Última vacina:") it.value = newData.vaccine;
+          else if (it.title === "Última doença:") it.value = newData.sick;
           else if (it.title === "Tipo sanguíneo:")
             it.value = newData.blood_type;
           return it;
         }),
       );
     }
-  }, [childData, reset]);
+  }, [childData, reset, onGetAllVaccines, onGetillness]);
 
   async function pickImage() {
     if (onlyRead) return;
@@ -175,18 +216,22 @@ export default function ProfileChildren() {
     if (!dataChildren) return;
 
     const formData = new FormData();
-    formData.append("child_name", data.child_name);
-    formData.append("birth_date", data.birth_date);
-    formData.append("blood_type", data.blood_type);
-    formData.append("gender", genderSelected);
+    formData.append("child_name", data.child_name || "");
+    formData.append("birth_date", data.birth_date || "");
+    formData.append("blood_type", data.blood_type || "");
+    formData.append("gender", genderSelected || "");
 
-    if (photoUri && photoUri !== dataChildren.photo) {
+    if (
+      photoUri &&
+      photoUri !== dataChildren.photo &&
+      !photoUri.startsWith("http")
+    ) {
       const filename = photoUri.split("/").pop() || "photo.jpg";
       const match = /\.(\w+)$/.exec(filename);
       const type = match ? `image/${match[1]}` : `image/jpeg`;
 
       formData.append("photo", {
-        uri: photoUri,
+        uri: Platform.OS === "ios" ? photoUri.replace("file://", "") : photoUri,
         name: filename,
         type: type,
       } as any);
@@ -254,7 +299,7 @@ export default function ProfileChildren() {
         <View>
           <ViewShot ref={refProfile} options={{ format: "jpg", quality: 0.9 }}>
             <View className="items-center py-2 z-99 relative">
-              <View className="absolute top-2 left-6 right-6 flex-row justify-between z-20">
+              <View className="absolute top-2 left-6 right-6 flex-row justify-between z-20 items-center">
                 <TouchableOpacity
                   onPress={shareProfile}
                   hitSlop={{ top: 10, bottom: 0, left: 10, right: 10 }}
@@ -262,12 +307,17 @@ export default function ProfileChildren() {
                   <ExportIcon width={24} height={24} />
                 </TouchableOpacity>
 
-                <View className="flex-row gap-4">
+                <View className="flex-row gap-4 items-center">
+                  <TouchableOpacity onPress={() => setDeleteModal(true)}>
+                    <Trash width={24} height={24} />
+                  </TouchableOpacity>
+
                   {!onlyRead && (
                     <TouchableOpacity onPress={cancelChanges}>
-                      <Cancel width={20} height={20} />
+                      <Cancel width={20} height={20} color="#4B5563" />
                     </TouchableOpacity>
                   )}
+
                   <TouchableOpacity
                     onPress={() =>
                       onlyRead ? setOnlyRead(false) : handleSubmit(sendDatas)()
@@ -276,18 +326,11 @@ export default function ProfileChildren() {
                     {onlyRead ? (
                       <EditIcon width={24} height={24} />
                     ) : (
-                      <Confirm width={20} height={20} />
+                      <Confirm width={20} height={20} color="#4B5563" />
                     )}
                   </TouchableOpacity>
                 </View>
               </View>
-
-              <TouchableOpacity
-                className="absolute top-2 right-16 z-20"
-                onPress={() => setDeleteModal(true)}
-              >
-                <Trash width={24} height={24} />
-              </TouchableOpacity>
 
               <Controller
                 control={control}
@@ -358,8 +401,12 @@ export default function ProfileChildren() {
       </KeyboardAvoidingView>
 
       <Modal visible={deleteModal} transparent={true} animationType="fade">
-        <View className="flex-1 bg-black/50 justify-center items-center px-4">
-          <View className="bg-lilas-bg w-full rounded-2xl p-6 items-center">
+        <BlurView
+          intensity={40}
+          tint="dark"
+          className="flex-1 justify-center items-center px-4"
+        >
+          <View className="bg-lilas-bg w-full rounded-2xl p-6 items-center shadow-lg">
             <Text className="text-primary-text font-bold text-lg text-center mb-1 font-poppins">
               Deseja desativar esta criança?
             </Text>
@@ -405,7 +452,7 @@ export default function ProfileChildren() {
               />
             </View>
           </View>
-        </View>
+        </BlurView>
       </Modal>
     </View>
   );

@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -7,9 +6,10 @@ import {
   DropdownFilter,
   type FilterOption,
 } from "../../src/components/DropdownFilter";
-import { LoadingBaby } from "../../src/components/Loading";
 import Chart from "../../src/components/measures/Chart";
+import { RequireChildGuard } from "../../src/components/RequireChildGuard";
 
+import { useChild } from "../../src/context/ChildContext";
 import { useGetBmiMeasures } from "../../src/services/hook/measures/useGetBmiMeasures";
 import { useGetHeadMeasures } from "../../src/services/hook/measures/useGetHeadMeasures";
 import { useGetHeightMeasures } from "../../src/services/hook/measures/useGetHeightMeasures";
@@ -71,35 +71,24 @@ const descriptionMeasure: LabelDescription[] = [
 
 export default function Measures() {
   const router = useRouter();
-
-  const [idChild, setIdChild] = useState<number>(0);
-
-  useEffect(() => {
-    async function loadChildId() {
-      const storedId = await AsyncStorage.getItem("select_child");
-      if (storedId) {
-        setIdChild(Number(storedId));
-      }
-    }
-    loadChildId();
-  }, []);
+  const { childId } = useChild();
 
   const {
     data: onGetHeighMeasures,
     refetch: refetcHeight,
     isFetched: fetchHeigh,
-  } = useGetHeightMeasures(idChild);
+  } = useGetHeightMeasures(childId);
   const {
     data: onGetWeighMeasures,
     refetch: refetchWeight,
     isFetched: fetchWeigh,
-  } = useGetWeightMeasures(idChild);
-  const { data: onGetHeadMeasures } = useGetHeadMeasures(idChild);
+  } = useGetWeightMeasures(childId);
+  const { data: onGetHeadMeasures } = useGetHeadMeasures(childId);
   const {
     data: onGetBmiMeasures,
     refetch: refetchBMI,
     isFetched: fetchBmi,
-  } = useGetBmiMeasures(idChild);
+  } = useGetBmiMeasures(childId);
 
   const [filterSelected, setFilterSelected] =
     useState<string>("Perímetro cefálico");
@@ -243,79 +232,81 @@ export default function Measures() {
     }
   }, [onGetBmiMeasures, filterSelected]);
 
-  if (idChild === 0) {
-    return <LoadingBaby message="Carregando medidas..." />;
-  }
-
   return (
-    <ScrollView
-      className="flex-1 bg-transparent px-4 py-2"
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 40 }}
-    >
-      <View className="flex-col w-full gap-4">
-        <View className="flex-row justify-between items-center w-full z-50">
-          <View className="flex-1">
-            <DropdownFilter
-              options={filterOptions}
-              selectedFilter={filterSelected}
-              onSelect={(val) => {
-                setFilterSelected(val);
-                changeDataChart(val);
-              }}
-            />
+    <RequireChildGuard>
+      <ScrollView
+        className="flex-1 bg-transparent px-4 py-2"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        <View className="flex-col w-full gap-4">
+          <View className="flex-row justify-between items-center w-full z-50">
+            <View className="flex-1">
+              <DropdownFilter
+                options={filterOptions}
+                selectedFilter={filterSelected}
+                onSelect={(val) => {
+                  setFilterSelected(val);
+                  changeDataChart(val);
+                }}
+              />
+            </View>
+
+            <TouchableOpacity
+              onPress={() => router.push("/updateMeasure")}
+              activeOpacity={0.8}
+              className="flex-row justify-center items-center bg-accent h-10 rounded-sm px-4 ml-2"
+            >
+              <Text className="text-white font-poppins font-bold text-xs">
+                Atualizar dados
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            onPress={() => router.push("/updateMeasure")}
-            activeOpacity={0.8}
-            className="flex-row justify-center items-center bg-accent h-10 rounded-sm px-4 ml-2"
-          >
-            <Text className="text-white font-poppins font-bold text-xs">
-              Atualizar dados
+          <View className="flex-col px-3 py-4 border border-primary rounded-md mt-4 z-10">
+            <Text className="font-nunito text-primary-text italic text-[14px]">
+              {setDescriptionForMeasure()}
             </Text>
-          </TouchableOpacity>
-        </View>
 
-        <View className="flex-col px-3 py-4 border border-primary rounded-md mt-4 z-10">
-          <Text className="font-nunito text-primary-text italic text-[14px]">
-            {setDescriptionForMeasure()}
+            <View className="flex-col font-poppins mt-4 gap-3">
+              <View className="flex-row justify-between items-center bg-lilas-bg/70 rounded-md p-2 px-3">
+                <Text className="font-semibold text-primary-text text-sm">
+                  Hoje:
+                </Text>
+                <Text className="text-accent font-semibold text-sm">
+                  {lastRegister}
+                </Text>
+              </View>
+
+              <View className="flex-row justify-between items-center bg-lilas-bg/70 rounded-md p-2 px-3">
+                <Text className="font-semibold text-primary-text text-sm">
+                  Registro anterior:
+                </Text>
+                <Text className="text-accent font-semibold text-sm">
+                  {beforeRegister}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <Text className="font-poppins text-primary-text font-bold text-xl mt-2">
+            Gráfico de desenvolvimento
           </Text>
 
-          <View className="flex-col font-poppins mt-4 gap-3">
-            <View className="flex-row justify-between items-center bg-lilas-bg/70 rounded-md p-2 px-3">
-              <Text className="font-semibold text-primary-text text-sm">
-                Hoje:
-              </Text>
-              <Text className="text-accent font-semibold text-sm">
-                {lastRegister}
-              </Text>
-            </View>
-
-            <View className="flex-row justify-between items-center bg-lilas-bg/70 rounded-md p-2 px-3">
-              <Text className="font-semibold text-primary-text text-sm">
-                Registro anterior:
-              </Text>
-              <Text className="text-accent font-semibold text-sm">
-                {beforeRegister}
-              </Text>
-            </View>
+          <View className="w-full h-80 z-10">
+            <Chart
+              data={dataChart}
+              value_type={
+                valueChart as
+                  | keyof Height
+                  | keyof Head
+                  | keyof Weight
+                  | keyof Bmi
+              }
+            />
           </View>
         </View>
-
-        <Text className="font-poppins text-primary-text font-bold text-xl mt-2">
-          Gráfico de desenvolvimento
-        </Text>
-
-        <View className="w-full h-80 z-10">
-          <Chart
-            data={dataChart}
-            value_type={
-              valueChart as keyof Height | keyof Head | keyof Weight | keyof Bmi
-            }
-          />
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </RequireChildGuard>
   );
 }

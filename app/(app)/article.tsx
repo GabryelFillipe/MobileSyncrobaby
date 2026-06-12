@@ -34,6 +34,22 @@ import CardCarousel from "../../src/components/articles/CardCarousel";
 const classButtonFilter: string =
   "flex justify-center items-center px-4 h-8 font-semibold rounded-lg md:h-10 border border-accent";
 
+const hiddenAgeGroups = [
+  "2 meses",
+  "3 meses",
+  "4 meses",
+  "5 meses",
+  "6 meses",
+  "7 meses",
+  "8 meses",
+  "9 meses",
+  "12 meses",
+  "15 meses",
+  "4 e 5 anos",
+  "4 anos",
+  "5 anos",
+];
+
 function Articles() {
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -41,8 +57,13 @@ function Articles() {
   const { data: onGetArticles } = useGetArticles();
   const { data: onGetAgeGroup } = useGetAgeGroups();
 
-  const [idAgeGroup, setIdAgeGroup] = useState<number>(1);
-  const { data: onGetArticlesByAge } = useGetArticleByAge(idAgeGroup);
+  const [idAgeGroupChild, setIdAgeGroupChild] = useState<number>(1);
+  const { data: onGetArticlesCarousel } = useGetArticleByAge(idAgeGroupChild);
+
+  const [filterArticlesId, setFilterArticlesId] = useState<number>(0);
+
+  const { data: onGetArticlesFilteredByAPI, isFetching: isFetchingFilter } =
+    useGetArticleByAge(filterArticlesId);
 
   const carousel = useRef<ScrollView>(null);
   const articleCarousel = useRef<View>(null);
@@ -52,14 +73,12 @@ function Articles() {
   const [h3Text, setH3Text] = useState<string>("Recomendações");
 
   const [indexCarousel, setIndexCarousel] = useState<number>(0);
-  const [filterArticles, setFilterArticles] = useState<string>("Todos");
   const [searchText, setSearchText] = useState<string>("");
 
   const [articlesCarousel, setArticlesCarousel] = useState<ArticleWithAge[]>(
     [],
   );
-  const [articlesMain, setArticlesMain] = useState<Article[]>([]);
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<(Article | ArticleWithAge)[]>([]);
 
   useEffect(() => {
     const fetchStorageData = async () => {
@@ -76,44 +95,48 @@ function Articles() {
   }, []);
 
   useEffect(() => {
-    if (!onGetAgeGroup || !childBirthDate) return;
-    setIdAgeGroup(calculateAgeChild(childBirthDate, onGetAgeGroup.age_group));
+    if (!onGetAgeGroup || typeof onGetAgeGroup === "string" || !childBirthDate)
+      return;
+    setIdAgeGroupChild(
+      calculateAgeChild(childBirthDate, onGetAgeGroup.age_group),
+    );
   }, [onGetAgeGroup, childBirthDate]);
 
   useEffect(() => {
-    if (onGetArticles && typeof onGetArticles !== "string") {
-      setArticlesMain(onGetArticles.article);
-      setArticles(onGetArticles.article);
+    if (onGetArticlesCarousel && typeof onGetArticlesCarousel !== "string") {
+      setArticlesCarousel(onGetArticlesCarousel.article.slice(0, 3));
     }
-  }, [onGetArticles]);
+  }, [onGetArticlesCarousel]);
 
   useEffect(() => {
-    let filtered = [...articlesMain];
+    let sourceList: (Article | ArticleWithAge)[] = [];
 
-    if (filterArticles !== "Todos") {
-      const lowerCat = filterArticles.toLowerCase();
-      filtered = filtered.filter((it) =>
-        it.title.toLowerCase().includes(lowerCat),
-      );
+    if (
+      filterArticlesId === 0 &&
+      onGetArticles &&
+      typeof onGetArticles !== "string"
+    ) {
+      sourceList = onGetArticles.article;
+    } else if (
+      filterArticlesId !== 0 &&
+      onGetArticlesFilteredByAPI &&
+      typeof onGetArticlesFilteredByAPI !== "string"
+    ) {
+      sourceList = onGetArticlesFilteredByAPI.article;
     }
 
     if (searchText.trim() !== "") {
       const lowerSearch = searchText.toLowerCase();
-      filtered = filtered.filter((it) =>
+      sourceList = sourceList.filter((it) =>
         it.title.toLowerCase().includes(lowerSearch),
       );
     }
 
-    setArticles(filtered);
-  }, [articlesMain, filterArticles, searchText]);
+    setArticles(sourceList);
+  }, [filterArticlesId, onGetArticles, onGetArticlesFilteredByAPI, searchText]);
 
   useEffect(() => {
-    if (onGetArticlesByAge) {
-      setArticlesCarousel(onGetArticlesByAge.article.slice(0, 3));
-    }
-  }, [onGetArticlesByAge]);
-
-  useEffect(() => {
+    if (articlesCarousel.length === 0 || width === 0) return;
     const interval = setInterval(() => {
       scrollIntervalCarousel();
     }, 5000);
@@ -128,6 +151,7 @@ function Articles() {
       const nextPosition = nextIndex * width;
 
       carousel.current.scrollTo({ x: nextPosition, y: 0, animated: true });
+      setIndexCarousel(nextIndex);
     }
   }
 
@@ -184,8 +208,7 @@ function Articles() {
                 <ScrollView
                   horizontal
                   pagingEnabled
-                  onScroll={scrollCarousel}
-                  scrollEventThrottle={16}
+                  onMomentumScrollEnd={scrollCarousel}
                   ref={carousel}
                   showsHorizontalScrollIndicator={false}
                   className="flex flex-row w-full"
@@ -216,7 +239,7 @@ function Articles() {
 
               <View className="flex flex-col w-full px-4 gap-4">
                 <Text className="text-primary-text font-semibold text-xl">
-                  Categorias
+                  Faixa Etária
                 </Text>
 
                 <ScrollView
@@ -225,28 +248,55 @@ function Articles() {
                   contentContainerStyle={{ gap: 12 }}
                   className="flex flex-row w-full pb-2"
                 >
-                  {["Todos", "sono", "alimentacao", "saude"].map((category) => (
-                    <TouchableOpacity
-                      key={category}
-                      activeOpacity={0.7}
-                      onPress={() => setFilterArticles(category)}
-                      className={`${classButtonFilter} ${
-                        filterArticles === category
-                          ? "bg-accent border-accent shadow-sm"
-                          : "bg-white border-gray-200"
-                      }`}
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setFilterArticlesId(0)}
+                    className={`${classButtonFilter} ${
+                      filterArticlesId === 0
+                        ? "bg-accent border-accent shadow-sm"
+                        : "bg-white border-gray-200"
+                    }`}
+                  >
+                    <Text
+                      className={
+                        filterArticlesId === 0 ? "text-white" : "text-gray-500"
+                      }
                     >
-                      <Text
-                        className={
-                          filterArticles === category
-                            ? "text-white"
-                            : "text-gray-500"
-                        }
-                      >
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                      Todas
+                    </Text>
+                  </TouchableOpacity>
+
+                  {onGetAgeGroup &&
+                    typeof onGetAgeGroup !== "string" &&
+                    onGetAgeGroup.age_group
+                      ?.filter(
+                        (ageGroup: any) =>
+                          !hiddenAgeGroups.includes(ageGroup.age_group_name),
+                      )
+                      .map((ageGroup: any) => (
+                        <TouchableOpacity
+                          key={ageGroup.id_age_group}
+                          activeOpacity={0.7}
+                          onPress={() =>
+                            setFilterArticlesId(ageGroup.id_age_group)
+                          }
+                          className={`${classButtonFilter} ${
+                            filterArticlesId === ageGroup.id_age_group
+                              ? "bg-accent border-accent shadow-sm"
+                              : "bg-white border-gray-200"
+                          }`}
+                        >
+                          <Text
+                            className={
+                              filterArticlesId === ageGroup.id_age_group
+                                ? "text-white"
+                                : "text-gray-500"
+                            }
+                          >
+                            {ageGroup.age_group_name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
                 </ScrollView>
               </View>
             </>
@@ -259,17 +309,24 @@ function Articles() {
               </Text>
             )}
 
-            {articles.map((article) => (
-              <TouchableOpacity
-                key={article.id_article}
-                activeOpacity={0.8}
-                onPress={() => handleArticlePage(article.id_article)}
-              >
-                <ArticleCard article={article} />
-              </TouchableOpacity>
-            ))}
+            {isFetchingFilter && filterArticlesId !== 0 && (
+              <Text className="text-gray-500 font-poppins text-center mt-4">
+                Buscando artigos...
+              </Text>
+            )}
 
-            {isSearching && articles.length === 0 && (
+            {!isFetchingFilter &&
+              articles.map((article) => (
+                <TouchableOpacity
+                  key={article.id_article}
+                  activeOpacity={0.8}
+                  onPress={() => handleArticlePage(article.id_article)}
+                >
+                  <ArticleCard article={article as Article} />
+                </TouchableOpacity>
+              ))}
+
+            {!isFetchingFilter && articles.length === 0 && (
               <Text className="text-gray-500 font-poppins text-center mt-4">
                 Nenhum artigo encontrado.
               </Text>
