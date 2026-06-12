@@ -42,8 +42,6 @@ function RoutineSleep() {
         });
     }
 
-    
-
     return (
         <ScrollView className="w-full min-h-full">
             <View className="flex w-full">

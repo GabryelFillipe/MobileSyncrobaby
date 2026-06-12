@@ -31,6 +31,11 @@ export interface ProductId {
   quantity_product?: number
 }
 
+export interface ProductIdBath {
+  id: number
+  quantity_product: number
+}
+
 export interface RegisterDiaper {
   date_time: string
   type: string
@@ -44,7 +49,7 @@ export interface RegisterBath {
   end_time: string
   description: string | null
   fk_id_child: number
-  product_id: ProductId[]
+  product_id: ProductIdBath[]
 }
 
 export interface RegisterMedication {
