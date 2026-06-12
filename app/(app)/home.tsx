@@ -45,7 +45,7 @@ interface ResponseChild {
 export const categoriesData: any[] = [
   { id: 1, title: "Vacinas", icon: VaccinesIcon, path: "vaccines" },
   { id: 2, title: "Estoque", icon: StorageIcon, path: "storage" },
-  { id: 3, title: "Rotinas", icon: RoutinesIcon, path: "routine/feeding" },
+  { id: 3, title: "Rotinas", icon: RoutinesIcon, path: "routine/routines" },
   { id: 4, title: "Diário", icon: DiaryIcon, path: "diary" },
   { id: 5, title: "Medidas", icon: MeasurementsIcon, path: "measure" },
   { id: 6, title: "Pediatra", icon: PediatricianIcon, path: "Professional" },

@@ -8,8 +8,10 @@ import BtnPrimary from "../../../src/components/BtnPrimary";
 import { useInsertDiaper } from "@/src/services/hook/routines/useInsertDiaper";
 import type { RegisterDiaper } from "@/src/services/routines/routines.service";
 
+import { useGetProductByTypeStorage } from "@/src/services/hook/storage/useGetProductByTypeStorage";
+
 export const inputClassName: string =
-    'className="w-full h-11 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg md:h-14 xl:bg-white xl:h-11 xl:px-4 caret-primary-darker';
+    'className="w-full h-13 mt-1 border border-primary-darker bg-white rounded-sm px-2 text-lilas-dark font-semibold text-lg md:h-14 xl:bg-white xl:h-11 xl:px-4 caret-primary-darker';
 export const labelClassName: string =
     "font-poppins text-primary-darker font-bold md:text-xl";
 export const buttonSubmit: string =
@@ -49,6 +51,8 @@ function RoutineDiaper() {
     const { mutate: onRegisterDiaper } = useInsertDiaper()
 
     const [childrenSelected, setChildSelected] = useState<number>(1);
+    const { data: onGetProducts } = useGetProductByTypeStorage(4, childrenSelected)
+
     const [expandSelectorProduct, setExpandSelectorProduct] = useState<boolean>(false);
     const [valueProduct, setValueProduct] = useState<string>("");
     const [productSelected, setProductSelected] = useState<ProductStorageLocal[]>([]);
@@ -62,13 +66,8 @@ function RoutineDiaper() {
         ':',
         /[0-5]/,
         /[0-9]/,
-      ];
-    const [productsMain] = useState<ProductStorageLocal[]>([
-        { id: 1, product_name: "Fralda Pompom M" },
-        { id: 2, product_name: "Lenço Umedecido Huggies" },
-        { id: 3, product_name: "Pomada Hipoglós" },
-        { id: 4, product_name: "Fralda Cremer G" }
-    ]);
+    ];
+    const [productsMain] = useState<ProductStorageLocal[]>([]);
     const [products, setProducts] = useState<ProductStorageLocal[]>(productsMain);
 
     const type_diaper: TypeDiaper[] = [
@@ -166,7 +165,7 @@ function RoutineDiaper() {
             <View className="flex w-full">
             </View>
 
-            <View className="flex flex-col w-full h-full p-4 gap-6">
+            <View className="flex flex-col w-full h-full p-4 gap-14">
 
                 <View className="flex flex-col">
                     <Text className={labelClassName}>Horário</Text>
