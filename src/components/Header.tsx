@@ -78,12 +78,13 @@ export default function Header() {
     if (p.includes("professional") || p.includes("pediatrician"))
       return "Profissionais";
 
-    if (p.includes("addillness")) return "Adicionar Enfermidade";
+    if (p.includes("addillness")) return "Adicionar condições de saúde";
 
     if (p.includes("editillness") || p.match(/\/(illness)\/\d+/))
-      return "Editar enfermidade";
+      return "Editar condição de saúde";
 
-    if (p.includes("health") || p.includes("illness")) return "Enfermidades";
+    if (p.includes("health") || p.includes("illness"))
+      return "Condições de Saúde";
     if (p.includes("updatemeasure") || p.includes("update-measure"))
       return "Atualizar medidas";
     if (p.includes("measure")) return "Medidas";

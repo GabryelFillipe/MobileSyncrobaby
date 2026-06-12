@@ -144,7 +144,7 @@ export default function Vaccines() {
                     placeholder="AAAA-MM-DD"
                     onChangeText={onChange}
                     value={value}
-                    className="pl-3 bg-white border border-gray-200 rounded-md w-full h-11 text-primary mb-2 text-center"
+                    className="pl-3 bg-white border border-gray-200 rounded-md w-full h-11 text-primary mb-2"
                   />
                 )}
               />
