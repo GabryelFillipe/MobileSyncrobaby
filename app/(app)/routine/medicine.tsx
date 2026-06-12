@@ -1,15 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import MaskInput from "react-native-mask-input";
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import MaskInput from 'react-native-mask-input';
 import BtnPrimary from "../../../src/components/BtnPrimary";
 
 import type { ProductStorage } from "@/src/services/storage/storage.service";
@@ -37,10 +30,11 @@ export const inputMeasureClass: string =
 export const listProductsClass: string =
   "flex flex-col w-full min-h-28 border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2 overflow-y-auto md:gap-4 xl:bg-white xl:min-h-24 xl:max-h-24 xl:px-6";
 
+
 interface ProductStorageLocal {
-  id: number;
-  product_name: string;
-  measure: string;
+    id: number;
+    product_name: string;
+    measure: string;
 }
 
 function RoutineMedicine() {
@@ -73,17 +67,6 @@ function RoutineMedicine() {
     if (storedId) {
       setChildId(Number(storedId));
     }
-  }
-  loadChildId();
-
-  const { data: onGetProducts } = useGetProductByTypeStorage(6, childId);
-
-  useEffect(() => {
-    const now = new Date();
-    const hour = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    setDateTime(`${hour}:${minutes}`);
-  }, []);
 
   useEffect(() => {
     if (!onGetProducts) {
@@ -96,16 +79,10 @@ function RoutineMedicine() {
     }
   }, [onGetProducts]);
 
-  function selectRemedy(item: ProductStorageLocal) {
-    setIdRemedySelected(item.id);
-    setExpandRemedy(false);
-    setDisableInput(false);
-
-    if (item.product_name && item.measure) {
-      setRemedyListSelected(item.product_name);
-      setMeasure(item.measure);
-    }
-  }
+    return (
+        <View className="w-full min-h-full">
+            <View className="flex w-full">
+            </View>
 
   function filterRemedy(text: string) {
     const newData = remedyMain.filter((it) =>
@@ -198,57 +175,8 @@ function RoutineMedicine() {
                 ))}
               </ScrollView>
             </View>
-          )}
         </View>
-
-        <View className="flex flex-col">
-          <Text className={labelClassName}>Dose</Text>
-          <View
-            className={`flex-row items-center justify-between px-2 ${inputClassName}`}
-          >
-            <TextInput
-              editable={!disableInput}
-              keyboardType="numeric"
-              onChangeText={(text) => setDosage(text.replace(/[^0-9]/g, ""))}
-              value={dosage}
-              placeholder="0"
-              className="flex-1 h-full p-0 text-primary-darker font-semibold text-lg"
-            />
-            <Text className="text-primary-darker pl-1 font-semibold text-lg">
-              {measure}
-            </Text>
-          </View>
-        </View>
-
-        <View className="flex flex-col">
-          <Text className={labelClassName}>Descrição</Text>
-          <TextInput
-            onChangeText={setDescription}
-            value={description}
-            multiline
-            numberOfLines={4}
-            placeholder="Adicione observações sobre a medicação..."
-            className={`h-40 ${inputClassName}`}
-            style={{ textAlignVertical: "top" }}
-          />
-        </View>
-
-        <View className="flex-row justify-between w-full h-12 mt-4 mb-4">
-          <BtnPrimary
-            onPress={() => navigation.goBack()}
-            text="Cancelar"
-            className={buttonCancel}
-          />
-          <BtnPrimary
-            onPress={handleRegister}
-            text="Registrar"
-            textClassName="text-white"
-            className={buttonSubmit}
-          />
-        </View>
-      </View>
-    </View>
-  );
+    );
 }
 
 export default RoutineMedicine;

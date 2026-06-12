@@ -98,6 +98,8 @@ function subHoursFormated(startTime: string, endTime: string) {
     const minutes: number = Math.floor((totalSeconds % 3600) / 60);
 
     const totalTime: string = `${hours}h:${minutes}min`;
+    console.log(startTime)
+    console.log(endTime)
 
     return totalTime;
   }

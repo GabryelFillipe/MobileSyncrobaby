@@ -91,12 +91,12 @@ export default function Header() {
     if (p.includes("addchild") || p.includes("add-child"))
       return "Adicionar Filho(a)";
     if (p.includes("routines")) return "Rotinas";
-    if (p.includes("feeding")) return "Alimentacão";
-    if (p.includes("routinesleep")) return "Sono";
-    if (p.includes("diaper")) return "Fraldas";
+    if (p.includes("feeding")) return "Registrar alimentacão";
+    if (p.includes("sleep")) return "Registrar sono";
+    if (p.includes("diaper")) return "Registrar fraldas";
     if (p.includes("vaccines")) return "Vacinas";
-    if (p.includes("shower")) return "Banho";
-    if (p.includes("medicine")) return "Medicação";
+    if (p.includes("shower")) return "Registrar banho";
+    if (p.includes("medicine")) return "Registrar medicação";
     return "";
   }
 

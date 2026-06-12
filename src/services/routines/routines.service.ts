@@ -1,6 +1,6 @@
 import { api } from "../api"
 
-export interface Routines {
+export interface Routine {
   child: number
   time: string
   date: string
@@ -9,13 +9,13 @@ export interface Routines {
   title: string
   log_type: string
   id: number
-  imageDesk?: string
+  imageDesk?: any
   asClicked?: boolean
 }
 
 export interface ResponseRoutines {
   status_code: number
-  routines: Routines[]
+  routines: Routine[]
 }
 
 export interface RegisterSleep {
@@ -31,6 +31,11 @@ export interface ProductId {
   quantity_product?: number
 }
 
+export interface ProductIdBath {
+  id: number
+  quantity_product: number
+}
+
 export interface RegisterDiaper {
   date_time: string
   type: string
@@ -44,7 +49,7 @@ export interface RegisterBath {
   end_time: string
   description: string | null
   fk_id_child: number
-  product_id: ProductId[]
+  product_id: ProductIdBath[]
 }
 
 export interface RegisterMedication {
