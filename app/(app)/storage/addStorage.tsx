@@ -6,6 +6,9 @@ import {
   ActivityIndicator,
   FlatList,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -220,200 +223,208 @@ export default function AddStorage() {
                       activeOpacity={0.8}
                       className="flex-col justify-center items-center font-nunito w-full h-full"
                     >
-                      {IconComponent && (
-                        <IconComponent width={32} height={32} />
-                      )}
-                      <Text className="text-primary-darker font-nunito font-semibold text-[14.5px] text-center mt-1">
-                        {type.product_type_name}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
-            </View>
-
-            {errors.product_category && (
-              <Text className="text-red-600/70 text-sm font-nunito">
-                {errors.product_category.message}
-              </Text>
-            )}
-          </View>
-
-          <View className="flex-col w-full relative">
-            <Text className={labelClass}>Produto</Text>
-            <View className="flex-col w-full z-40">
-              <View className={`flex-row gap-2 items-center ${inputClassName}`}>
-                <TextInput
-                  editable={typeProduct != null}
-                  onChangeText={(text) => {
-                    filterProduct(text);
-                    setValueProduct(text);
-                  }}
-                  onFocus={() => setSelectProduct(true)}
-                  value={valueProduct}
-                  placeholder={nameProduct}
-                  placeholderTextColor="#9CA3AF"
-                  className="flex-1 text-primary-text font-poppins"
-                />
-                <TouchableOpacity
-                  onPress={() => setSelectProduct(!selectProduct)}
-                >
-                  <SetSelector
-                    width={16}
-                    height={16}
-                    className={selectProduct ? "turn-set" : "return-set"}
-                  />
-                </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => changeTypeProduct(type.id_product_type)}
+                        activeOpacity={0.8}
+                        className="flex-col justify-center items-center font-nunito w-full h-full"
+                      >
+                        {IconComponent && (
+                          <IconComponent width={32} height={32} />
+                        )}
+                        <Text className="text-primary-darker font-nunito font-semibold text-[13px] text-center mt-2">
+                          {type.product_type_name}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
               </View>
 
-              {errors.product_name && (
-                <Text className="text-red-600/70 text-sm font-nunito">
-                  {errors.product_name.message}
+              {errors.product_category && (
+                <Text className="text-red-600/70 text-sm font-nunito mt-1">
+                  {errors.product_category.message}
                 </Text>
               )}
+            </View>
 
-              {selectProduct && typeProduct != null && (
-                <View className="absolute top-12 left-0 right-0 z-50 rounded-bl-lg rounded-br-lg border-b border-l border-r border-primary-darker bg-lightest max-h-40 overflow-hidden">
-                  {isLoading && (
-                    <ActivityIndicator
-                      size="small"
-                      color="#9CA3AF"
-                      className="my-4"
+            <View className="flex-col w-full relative mb-4">
+              <Text className={labelClass}>Produto</Text>
+              <View className="flex-col w-full z-40">
+                <View
+                  className={`flex-row gap-2 items-center ${inputClassName}`}
+                >
+                  <TextInput
+                    editable={typeProduct != null}
+                    onChangeText={(text) => {
+                      filterProduct(text);
+                      setValueProduct(text);
+                    }}
+                    onFocus={() => setSelectProduct(true)}
+                    value={valueProduct}
+                    placeholder={nameProduct}
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 text-primary-text font-poppins"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setSelectProduct(!selectProduct)}
+                  >
+                    <SetSelector
+                      width={16}
+                      height={16}
+                      className={selectProduct ? "turn-set" : "return-set"}
                     />
-                  )}
-                  {!isLoading && !isError && (
-                    <FlatList
-                      data={listProducts}
-                      keyExtractor={(item) => item.id.toString()}
-                      keyboardShouldPersistTaps="handled"
-                      nestedScrollEnabled={true}
-                      contentContainerStyle={{
-                        paddingBottom: 8,
-                        paddingTop: 8,
-                      }}
-                      renderItem={({ item: product }) => (
-                        <TouchableOpacity
-                          className="flex-row items-center w-full h-10 pl-4 border-b border-gray-100"
-                          onPress={() => {
-                            setIdProduct(product.id);
-                            setValueProduct(product.name);
-                            setValue("measurement_unit", product.unit);
-                            setMeasureHigh(product.unit);
-                            setSelectProduct(false);
-                            Keyboard.dismiss();
-                          }}
-                        >
-                          <Text className={labelRadioButton}>
-                            {product.name}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    />
-                  )}
+                  </TouchableOpacity>
                 </View>
-              )}
-            </View>
-          </View>
 
-          <View className="flex-row justify-between w-full z-10">
-            <View className="flex-col w-[30%]">
-              <Text className={labelClass}>Quantidade</Text>
-              <Controller
-                control={control}
-                name="quantity"
-                rules={{ required: "Campo obrigatório!" }}
-                render={({ field: { onChange, value } }) => (
-                  <InputDefault
-                    editable={idProduct !== 0}
-                    onChangeText={onChange}
-                    value={value ? value.toString() : ""}
-                    keyboardType="numeric"
-                    className={inputClassName}
-                  />
+                {errors.product_name && (
+                  <Text className="text-red-600/70 text-sm font-nunito mt-1">
+                    {errors.product_name.message}
+                  </Text>
                 )}
-              />
-              {errors.quantity && (
-                <Text className="text-red-600/70 text-[12px] font-nunito">
-                  {errors.quantity.message}
-                </Text>
-              )}
-            </View>
 
-            <View
-              className={`flex-col w-[30%] ${measureHigh === "un" ? "opacity-40" : ""}`}
-            >
-              <Text className={labelClass}>Volume</Text>
-              <Controller
-                control={control}
-                name="volume"
-                rules={{
-                  required: measureHigh === "un" ? false : "Campo obrigatório!",
-                }}
-                render={({ field: { onChange, value } }) => (
-                  <InputDefault
-                    editable={measureHigh !== "un" && idProduct !== 0}
-                    onChangeText={onChange}
-                    value={value ? value.toString() : ""}
-                    keyboardType="numeric"
-                    className={inputClassName}
-                  />
+                {selectProduct && typeProduct != null && (
+                  <View className="absolute top-14 left-0 right-0 z-50 rounded-bl-lg rounded-br-lg border-b border-l border-r border-primary-darker bg-white max-h-48 overflow-hidden shadow-lg">
+                    {isLoading && (
+                      <ActivityIndicator
+                        size="small"
+                        color="#9CA3AF"
+                        className="my-4"
+                      />
+                    )}
+                    {!isLoading && !isError && (
+                      <FlatList
+                        data={listProducts}
+                        keyExtractor={(item) => item.id.toString()}
+                        keyboardShouldPersistTaps="handled"
+                        nestedScrollEnabled={true}
+                        contentContainerStyle={{
+                          paddingBottom: 8,
+                          paddingTop: 8,
+                        }}
+                        renderItem={({ item: product }) => (
+                          <TouchableOpacity
+                            className="flex-row items-center w-full h-12 pl-4 border-b border-gray-100"
+                            onPress={() => {
+                              setIdProduct(product.id);
+                              setValueProduct(product.name);
+                              setValue("measurement_unit", product.unit);
+                              setMeasureHigh(product.unit);
+                              setSelectProduct(false);
+                              Keyboard.dismiss();
+                            }}
+                          >
+                            <Text className={labelRadioButton}>
+                              {product.name}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      />
+                    )}
+                  </View>
                 )}
-              />
-              {errors.volume && (
-                <Text className="text-red-600/70 text-[12px] font-nunito">
-                  {errors.volume.message}
-                </Text>
-              )}
+              </View>
             </View>
 
-            <View className="flex-col w-[30%]">
-              <Text className={labelClass}>Grandeza</Text>
-              <Controller
-                control={control}
-                name="measurement_unit"
-                render={({ field: { value } }) => (
-                  <InputDefault
-                    editable={false}
-                    value={value}
-                    className={inputClassName}
-                  />
-                )}
-              />
-            </View>
-          </View>
-
-          <View className="flex-col w-full z-10">
-            <Text className={labelClass}>Descrição</Text>
-            <Controller
-              control={control}
-              name="description"
-              render={({ field: { onChange, value } }) => (
-                <TextInput
-                  multiline
-                  onChangeText={onChange}
-                  value={value}
-                  textAlignVertical="top"
-                  className={`h-36 outline-none ${inputClassName}`}
+            <View className="flex-row justify-between w-full z-10 mb-4">
+              <View className="flex-col w-[30%]">
+                <Text className={labelClass}>Quantidade</Text>
+                <Controller
+                  control={control}
+                  name="quantity"
+                  rules={{ required: "Obrigatório!" }}
+                  render={({ field: { onChange, value } }) => (
+                    <InputDefault
+                      editable={idProduct !== 0}
+                      onChangeText={onChange}
+                      value={value ? value.toString() : ""}
+                      keyboardType="numeric"
+                      className={inputClassName}
+                    />
+                  )}
                 />
-              )}
-            />
-          </View>
+                {errors.quantity && (
+                  <Text className="text-red-600/70 text-[12px] font-nunito mt-1">
+                    {errors.quantity.message}
+                  </Text>
+                )}
+              </View>
 
-          <View className="flex-row w-full justify-between items-center h-16 z-10 mb-4">
-            <BtnPrimary
-              onPress={() => router.back()}
-              text="Cancelar"
-              className={buttonCancel}
-            />
-            <BtnPrimary
-              onPress={handleSubmit(sendData)}
-              text="Registrar"
-              className={buttonSubmit}
-              textClassName="text-white"
-            />
+              <View
+                className={`flex-col w-[30%] ${measureHigh === "un" ? "opacity-40" : ""}`}
+              >
+                <Text className={labelClass}>Volume</Text>
+                <Controller
+                  control={control}
+                  name="volume"
+                  rules={{
+                    required: measureHigh === "un" ? false : "Obrigatório!",
+                  }}
+                  render={({ field: { onChange, value } }) => (
+                    <InputDefault
+                      editable={measureHigh !== "un" && idProduct !== 0}
+                      onChangeText={onChange}
+                      value={value ? value.toString() : ""}
+                      keyboardType="numeric"
+                      className={inputClassName}
+                    />
+                  )}
+                />
+                {errors.volume && (
+                  <Text className="text-red-600/70 text-[12px] font-nunito mt-1">
+                    {errors.volume.message}
+                  </Text>
+                )}
+              </View>
+
+              <View className="flex-col w-[30%]">
+                <Text className={labelClass}>Grandeza</Text>
+                <Controller
+                  control={control}
+                  name="measurement_unit"
+                  render={({ field: { value } }) => (
+                    <InputDefault
+                      editable={false}
+                      value={value}
+                      className={inputClassName}
+                    />
+                  )}
+                />
+              </View>
+            </View>
+
+            <View className="flex-col w-full z-10 mb-8">
+              <Text className={labelClass}>Descrição</Text>
+              <Controller
+                control={control}
+                name="description"
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    multiline
+                    onChangeText={onChange}
+                    value={value}
+                    textAlignVertical="top"
+                    className={`h-36 outline-none ${inputClassName}`}
+                  />
+                )}
+              />
+            </View>
+
+            <View className="flex-row w-full justify-between items-center h-16 z-10 mb-8">
+              <BtnPrimary
+                onPress={() => router.back()}
+                text="Cancelar"
+                className={buttonCancel}
+              />
+              <BtnPrimary
+                onPress={handleSubmit(sendData)}
+                text="Registrar"
+                className={buttonSubmit}
+                textClassName="text-white"
+              />
+            </View>
           </View>
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
+        </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

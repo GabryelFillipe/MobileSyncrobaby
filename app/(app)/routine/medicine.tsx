@@ -1,8 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import MaskInput from 'react-native-mask-input';
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import MaskInput from "react-native-mask-input";
 import BtnPrimary from "../../../src/components/BtnPrimary";
 
 import type { ProductStorage } from "@/src/services/storage/storage.service";
@@ -30,11 +37,10 @@ export const inputMeasureClass: string =
 export const listProductsClass: string =
     "flex flex-col w-full min-h-28 border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2 overflow-y-auto md:gap-4 xl:bg-white xl:min-h-24 xl:max-h-24 xl:px-6";
 
-
 interface ProductStorageLocal {
-    id: number;
-    product_name: string;
-    measure: string;
+  id: number;
+  product_name: string;
+  measure: string;
 }
 
 function RoutineMedicine() {
@@ -108,6 +114,8 @@ function RoutineMedicine() {
         );
         setRemedy(newData);
     }
+    loadChildId();
+  }, []);
 
     function handleRegister() {
         if (!dateTime) {
@@ -238,8 +246,45 @@ function RoutineMedicine() {
                     />
                 </View>
             </View>
+          )}
         </View>
-    );
+
+        <View className="flex flex-col">
+          <Text className={labelClassName}>Dosagem</Text>
+          <TextInput
+            keyboardType="numeric"
+            onChangeText={setDosage}
+            value={dosage}
+            placeholder="Ex: 5"
+            className={inputClassName}
+          />
+        </View>
+
+        <View className="flex flex-col">
+          <Text className={labelClassName}>Descrição / Observação</Text>
+          <TextInput
+            onChangeText={setDescription}
+            value={description}
+            placeholder="Ex: Tomar após as refeições"
+            className={inputClassName}
+          />
+        </View>
+
+        <View className="flex-row justify-between w-full mt-6 pb-10">
+          <BtnPrimary
+            text="Cancelar"
+            onPress={() => navigation.goBack()}
+            className={buttonCancel}
+          />
+          <BtnPrimary
+            text="Salvar"
+            onPress={handleRegister}
+            className={buttonSubmit}
+          />
+        </View>
+      </View>
+    </ScrollView>
+  );
 }
 
 export default RoutineMedicine;
