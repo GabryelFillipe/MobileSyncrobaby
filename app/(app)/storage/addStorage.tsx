@@ -200,32 +200,28 @@ export default function AddStorage() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-light"
-    >
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <TouchableWithoutFeedback onPress={handleOutsidePress}>
-          <View className="flex-1 w-full px-6 pt-4 flex-col">
-            <View className="flex-col w-full mb-4">
-              <Text className={labelClass}>Tipo de produto</Text>
+    <TouchableWithoutFeedback onPress={handleOutsidePress}>
+      <View className="w-full min-h-full px-6 flex">
+        <View className="w-full h-full flex gap-2">
+          <View className="flex-col w-full">
+            <Text className={labelClass}>Tipo de produto</Text>
 
-              <View className="flex-row flex-wrap items-center grow mt-2">
-                {typeListProduct.map((type) => {
-                  const IconComponent = type.icon;
-                  return (
-                    <View
-                      key={type.id_product_type}
-                      className={`w-[30%] h-36 bg-lilas border px-2 border-primary rounded-sm m-1 ${
-                        typeProduct === type.id_product_type
-                          ? "shadow-purple-sm bg-lilas-dark/10"
-                          : ""
-                      }`}
+            <View className="flex-row flex-wrap items-center justify-between grow">
+              {typeListProduct.map((type) => {
+                const IconComponent = type.icon;
+                return (
+                  <View
+                    key={type.id_product_type}
+                    className={`w-[30%] h-30 bg-lilas border px-2 border-primary rounded-sm m-1 ${
+                      typeProduct === type.id_product_type
+                        ? "shadow-purple-sm bg-lilas-dark/10"
+                        : ""
+                    }`}
+                  >
+                    <TouchableOpacity
+                      onPress={() => changeTypeProduct(type.id_product_type)}
+                      activeOpacity={0.8}
+                      className="flex-col justify-center items-center font-nunito w-full h-full"
                     >
                       <TouchableOpacity
                         onPress={() => changeTypeProduct(type.id_product_type)}

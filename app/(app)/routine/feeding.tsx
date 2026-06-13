@@ -312,24 +312,35 @@ export default function RoutineFeeding() {
               (Apenas itens esgotados!)
             </Text>
           </Text>
-          <TouchableOpacity
-            disabled={typeFood === null}
-            onPress={() => setFoodExpandSelector(!foodExpandSelector)}
-            className={`${inputClassName} border p-2 bg-gray-50`}
-          >
-            <Text className="text-lilas-dark">
-              {typeFood === null
-                ? "Selecione um tipo de alimento!"
-                : foodSelected || "Clique para selecionar o produto"}
-            </Text>
-          </TouchableOpacity>
+        </Text>
+        <TouchableOpacity
+          disabled={typeFood === null}
+          onPress={() => setFoodExpandSelector(!foodExpandSelector)}
+          className={`${inputClassName} border p-2 bg-gray-50`}
+        >
+          <Text className="text-lilas-dark">
+            {typeFood === null
+              ? "Selecione um tipo de alimento!"
+              : foodSelected || "Clique para selecionar o produto"}
+          </Text>
+        </TouchableOpacity>
 
-          {foodExpandSelector && typeFood !== null && (
-            <View className="absolute top-18 left-0 right-0 border border-primary-darker rounded-b-lg bg-white p-2 max-h-40 z-49 shadow-lg">
-              {foods.length === 0 ? (
-                <View className="items-center py-4">
-                  <Text className="text-sm font-semibold text-gray-500 mb-2">
-                    Nenhum produto deste tipo...
+        {foodExpandSelector && typeFood !== null && (
+          <View className="absolute top-18 left-0 right-0 border border-primary-darker rounded-b-lg bg-white p-2 max-h-40 z-49">
+            {foods.length === 0 ? (
+              <View className="items-center py-4">
+                <Text className="text-sm font-semibold text-gray-500 mb-2">
+                  Nenhum produto deste tipo...
+                </Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push(
+                      "/storage"
+                    )
+                  }
+                  className="bg-accent rounded px-4 py-2">
+                  <Text className="text-white font-semibold">
+                    Registrar Produto
                   </Text>
 
                   {/* CORREÇÃO APLICADA NO BOTÃO AQUI */}
