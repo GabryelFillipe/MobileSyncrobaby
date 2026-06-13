@@ -1,21 +1,14 @@
-import { useState } from "react";
+import { Pressable, Text, TouchableOpacity, View } from "react-native";
 
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-import type { RoutineData } from '../../../app/(app)/routine/routines';
+import type { Routine } from "../../../src/services/routines/routines.service";
 
 import Trash from "../../../src/assets/routines/trashPurple.svg";
 
 interface Props {
-  routineData: RoutineData
+  routineData: Routine
   visibilityTrash: boolean
-  onClick: (id: number) => void
-  onDelete: (id: number) => void
+  onClick: (id: string) => void
+  onDelete: (id: string) => void
 }
 
 function HourCard({
@@ -25,164 +18,161 @@ function HourCard({
   onDelete
 }: Props) {
 
-  const [hoverVisibilityTrash, setHoverVisibilityTrash] =
-    useState<number>(0);
+  function formaterHour(hour: string) {
+    const newHours = hour.split(":");
+
+    return `${newHours[0]}:${newHours[1]}`;
+  }
+
+  function formaterTitle(title: string) {
+    if (title === "banho") {
+      return "Banho";
+    }
+
+    if (title === "stool") {
+      return "Fraldas (Cocô)";
+    }
+
+    if (title === "urine") {
+      return "Fraldas (Xixi)";
+    }
+
+    if (title === "Alimentação (Alimento sólido)") {
+      return "Alimento sólido";
+    }
+
+    if (title === "Alimentação (Papinha ou purê)") {
+      return "Papinha ou purê";
+    }
+
+    if (title === "Alimentação (Leite e derivados)") {
+      return "Leite e derivados";
+    }
+
+    if (title === "medication") {
+      return "Medicação";
+    }
+
+    if (title === "soneca") {
+      return "Soneca";
+    }
+
+    return title;
+  }
 
   return (
-
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={() => onClick(routineData.id)}
-      onPressIn={() => setHoverVisibilityTrash(routineData.id)}
-      onPressOut={() => setHoverVisibilityTrash(0)}
-      style={[
-        styles.container,
-        routineData.asClicked
-          ? styles.containerExpanded
-          : styles.containerCollapsed
-      ]}
+    <Pressable
+      onPress={() =>
+        onClick(
+          `${routineData.log_type}${routineData.id}`
+        )
+      }
+      className={`
+            flex-row
+            w-full
+            bg-lilas
+            rounded-xl
+            px-4
+            mt-4
+            overflow-hidden
+            ${routineData.asClicked
+          ? "max-h-50"
+          : "max-h-16"
+        }
+        `}
     >
-
-      <View style={styles.leftContainer}>
-
-        <Text style={styles.hour}>
-          {routineData.hours}
-        </Text>
-
-        <View style={styles.iconCircle}>
-
-          {routineData.imageDesk && (
-
-            <routineData.imageDesk
-              width={20}
-              height={20}
-            />
-
-          )}
-
-        </View>
-
-      </View>
-
-      <View style={styles.contentContainer}>
-
-        <Text style={styles.title}>
-          {routineData.title}
-        </Text>
-
+      {/* Horário */}
+      <View
+        className="
+        flex flex-row gap-4
+                w-20
+                pt-4
+            "
+      >
         <Text
-          style={[
-            styles.description,
-            routineData.description == null &&
-            styles.italic
-          ]}
+          className="
+                    text-2xl
+                    font-semibold
+                    text-primary
+                "
         >
-
-          {routineData.description != null
-            ? `${routineData.description}`
-            : "Nenhuma descrição adicionada"}
-
+          {formaterHour(routineData.time)}
         </Text>
 
-        {visibilityTrash &&
-          hoverVisibilityTrash == routineData.id && (
-
-            <TouchableOpacity
-              onPress={() => onDelete(routineData.id)}
-              style={styles.trashButton}
-            >
-
-              <Trash
-                width={20}
-                height={20}
-              />
-
-            </TouchableOpacity>
-
-          )}
-
+        <View
+          className="
+                    w-5
+                    h-5
+                    mt-1
+                    rounded-full
+                    bg-primary
+                "
+        />
       </View>
 
-    </TouchableOpacity>
+      {/* Conteúdo */}
+      <View
+        className="
+                pt-4
+                flex grow
+                flex-col
+                pl-10
+                justify-start
+            "
+      >
+        <Text
+          className="
+                    min-h-16
+                    text-lg
+                    font-semibold
+                    text-primary-text
+                    
+                "
+        >
+          {formaterTitle(
+            routineData.title
+          )}
+        </Text>
+
+        {routineData.asClicked && (
+          <>
+            <Text
+              className={`
+                            mt-2
+                            text-primary
+                            ${!routineData.description
+                  ? "italic"
+                  : ""
+                }
+                        `}
+            >
+              {routineData.description &&
+                routineData.description !== ""
+                ? routineData.description
+                : "Nenhuma descrição adicionada"}
+            </Text>
+
+            {visibilityTrash && (
+              <TouchableOpacity
+                onPress={() =>
+                  onDelete(
+                    `${routineData.log_type}/${routineData.id}`
+                  )
+                }
+                className="
+                                self-end
+                                mt-1
+                                mb-2
+                            "
+              >
+                <Trash />
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+      </View>
+    </Pressable>
   );
 }
 
 export default HourCard;
-
-const styles = StyleSheet.create({
-
-  container: {
-    flexDirection: "row",
-    width: "100%",
-    backgroundColor: "#D9B8FF",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    overflow: "hidden",
-    marginBottom: 16,
-  },
-
-  containerExpanded: {
-    minHeight: 140,
-    paddingVertical: 16,
-  },
-
-  containerCollapsed: {
-    minHeight: 64,
-    paddingVertical: 10,
-  },
-
-  leftContainer: {
-    width: 90,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  hour: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#55297B",
-    marginBottom: 10,
-  },
-
-  iconCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 999,
-    backgroundColor: "#55297B",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  contentContainer: {
-    flex: 1,
-    paddingLeft: 18,
-    paddingBottom: 8,
-    justifyContent: "center",
-    position: "relative",
-  },
-
-  title: {
-    fontSize: 19,
-    fontWeight: "700",
-    color: "#2D1247",
-    marginBottom: 10,
-  },
-
-  description: {
-    fontSize: 14,
-    color: "#55297B",
-    paddingRight: 28,
-    lineHeight: 20,
-  },
-
-  italic: {
-    fontStyle: "italic",
-  },
-
-  trashButton: {
-    position: "absolute",
-    right: 0,
-    bottom: 0,
-  },
-
-});

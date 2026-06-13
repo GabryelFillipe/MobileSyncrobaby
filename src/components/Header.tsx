@@ -55,6 +55,10 @@ export default function Header() {
     setPreviousNotifCount(notifications.length);
   }, [notifications.length]);
 
+  useEffect(() => {
+    console.log(notificationsData)
+  }, [notificationsData])
+
   function moveNoticationsBar() {
     setVisibleNotifications(!visibleNotifications);
   }

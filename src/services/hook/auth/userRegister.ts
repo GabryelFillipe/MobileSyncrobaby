@@ -4,6 +4,7 @@ import { registerService, type RegisterData } from "../../auth/auth.service";
 
 export const useRegister = () => {
   const router = useRouter();
+  console.log(123)
 
   return useMutation({
     mutationFn: (data: RegisterData) => registerService(data),

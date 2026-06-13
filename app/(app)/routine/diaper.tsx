@@ -185,7 +185,7 @@ function RoutineDiaper() {
             <View className="flex w-full">
             </View>
 
-            <View className="flex flex-col w-full h-full p-4 gap-14">
+            <View className="flex flex-col w-full h-full p-4 gap-4">
 
                 <View className="flex flex-col">
                     <Text className={labelClassName}>Horário</Text>
