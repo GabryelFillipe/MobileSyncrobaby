@@ -1,8 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import MaskInput from 'react-native-mask-input';
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import MaskInput from "react-native-mask-input";
 import BtnPrimary from "../../../src/components/BtnPrimary";
 
 import type { ProductStorage } from "@/src/services/storage/storage.service";
@@ -30,17 +37,20 @@ export const inputMeasureClass: string =
 export const listProductsClass: string =
   "flex flex-col w-full min-h-28 border border-primary-darker bg-white rounded-lg px-4 py-3 gap-2 overflow-y-auto md:gap-4 xl:bg-white xl:min-h-24 xl:max-h-24 xl:px-6";
 
-
 interface ProductStorageLocal {
-    id: number;
-    product_name: string;
-    measure: string;
+  id: number;
+  product_name: string;
+  measure: string;
 }
 
 function RoutineMedicine() {
   const navigation = useNavigation();
 
+  const [childId, setChildId] = useState<number>(0);
+
   const { mutate: onRegisterMedicine } = useRegisterMedication();
+
+  const { data: onGetProducts } = useGetProductByTypeStorage(2, childId);
 
   const [expandRemedy, setExpandRemedy] = useState<boolean>(false);
   const [remedyListSelected, setRemedyListSelected] = useState<string>("");
@@ -61,34 +71,35 @@ function RoutineMedicine() {
 
   const [remedyMain, setRemedyMain] = useState<ProductStorage[]>([]);
   const [remedy, setRemedy] = useState<ProductStorage[]>([]);
-  const [childId, setChildId] = useState<number>(0);
-  async function loadChildId() {
-    const storedId = await AsyncStorage.getItem("select_child");
-    if (storedId) {
-      setChildId(Number(storedId));
-    }
 
   useEffect(() => {
-    if (!onGetProducts) {
-      return;
+    async function loadChildId() {
+      const storedId = await AsyncStorage.getItem("select_child");
+      if (storedId) {
+        setChildId(Number(storedId));
+      }
     }
+    loadChildId();
+  }, []);
 
-    if (onGetProducts) {
+  useEffect(() => {
+    if (onGetProducts && onGetProducts.stock) {
       setRemedy(onGetProducts.stock);
       setRemedyMain(onGetProducts.stock);
     }
   }, [onGetProducts]);
-
-    return (
-        <View className="w-full min-h-full">
-            <View className="flex w-full">
-            </View>
 
   function filterRemedy(text: string) {
     const newData = remedyMain.filter((it) =>
       it.product_name?.toLowerCase().includes(text.toLowerCase()),
     );
     setRemedy(newData);
+  }
+
+  function selectRemedy(item: ProductStorage) {
+    setRemedyListSelected(item.product_name);
+    setIdRemedySelected(item.id);
+    setExpandRemedy(false);
   }
 
   function handleRegister() {
@@ -116,21 +127,21 @@ function RoutineMedicine() {
       description,
       fk_id_child: childId,
     };
+
     onRegisterMedicine(fullData, {
       onSuccess: () => {
-        Alert.alert("Registro de medicação feito com sucesso!");
+        Alert.alert("Sucesso", "Registro de medicação feito com sucesso!");
+        navigation.goBack();
       },
       onError: () => {
-        Alert.alert("Erro!");
+        Alert.alert("Erro", "Não foi possível registrar a medicação.");
       },
     });
   }
 
   return (
-    <View className="w-full min-h-full">
-      <View className="flex w-full"></View>
-
-      <View className="flex flex-col w-full h-full p-4 gap-12">
+    <ScrollView className="w-full min-h-full bg-light">
+      <View className="flex flex-col w-full h-full p-4 gap-8">
         <View className="flex flex-col">
           <Text className={labelClassName}>Horário</Text>
           <MaskInput
@@ -175,8 +186,45 @@ function RoutineMedicine() {
                 ))}
               </ScrollView>
             </View>
+          )}
         </View>
-    );
+
+        <View className="flex flex-col">
+          <Text className={labelClassName}>Dosagem</Text>
+          <TextInput
+            keyboardType="numeric"
+            onChangeText={setDosage}
+            value={dosage}
+            placeholder="Ex: 5"
+            className={inputClassName}
+          />
+        </View>
+
+        <View className="flex flex-col">
+          <Text className={labelClassName}>Descrição / Observação</Text>
+          <TextInput
+            onChangeText={setDescription}
+            value={description}
+            placeholder="Ex: Tomar após as refeições"
+            className={inputClassName}
+          />
+        </View>
+
+        <View className="flex-row justify-between w-full mt-6 pb-10">
+          <BtnPrimary
+            text="Cancelar"
+            onPress={() => navigation.goBack()}
+            className={buttonCancel}
+          />
+          <BtnPrimary
+            text="Salvar"
+            onPress={handleRegister}
+            className={buttonSubmit}
+          />
+        </View>
+      </View>
+    </ScrollView>
+  );
 }
 
 export default RoutineMedicine;

@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -245,180 +247,191 @@ export default function RoutineFeeding() {
   }, []);
 
   return (
-    <ScrollView
-      className="flex-1 bg-light px-4 py-2 flex gap-40"
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 bg-light"
     >
-      <View className="flex-col mb-4">
-        <Text className={labelClassName}>Horário</Text>
-        <Controller
-          control={control}
-          rules={{ required: "Hora obrigatória" }}
-          name="date_time"
-          render={({ field: { onChange, value } }) => (
-            <TextInput
-              onChangeText={onChange}
-              value={value}
-              placeholder="HH:MM"
-              className={`${inputClassName} border p-2`}
-            />
+      <ScrollView
+        className="flex-1 bg-light px-4 py-2 flex"
+        contentContainerStyle={{ paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="flex-col mb-4">
+          <Text className={labelClassName}>Horário</Text>
+          <Controller
+            control={control}
+            rules={{ required: "Hora obrigatória" }}
+            name="date_time"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                onChangeText={onChange}
+                value={value}
+                placeholder="HH:MM"
+                className={`${inputClassName} border p-2`}
+              />
+            )}
+          />
+          {errors.date_time && (
+            <Text className="text-red-600 text-sm font-nunito mt-1">
+              {errors.date_time.message}
+            </Text>
           )}
-        />
-        {errors.date_time && (
-          <Text className="text-red-600 text-sm font-nunito mt-1">
-            {errors.date_time.message}
-          </Text>
-        )}
-      </View>
-
-      <View className="mb-4">
-        <Text className={labelClassName}>Tipo de alimento</Text>
-        <View className="flex-row justify-between mt-2">
-          {food_type.map((food) => {
-            const IconComponent = food.icon;
-
-            return (
-              <TouchableOpacity
-                key={food.id_product_type}
-                onPress={() => {
-                  clearListFood(food.id_product_type);
-                  setFoodExpandSelector(false);
-                }}
-                className={`w-[30%] h-24 rounded-lg bg-lilas border border-primary items-center justify-center p-1 will-change-variable
-                  ${typeFood === food.id_product_type ? "bg-purple-100 border-2" : ""}`}
-              >
-                {IconComponent && <IconComponent width={32} height={32} />}
-
-                <Text className="text-center font-nunito text-primary text-xs font-semibold mt-1">
-                  {food.product_type_name}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
         </View>
-      </View>
 
-      <View className="mb-4 relative z-50">
-        <Text className={labelClassName}>
-          Alimento{" "}
-          <Text className="italic text-xs font-normal">
-            (Apenas itens esgotados!)
-          </Text>
-        </Text>
-        <TouchableOpacity
-          disabled={typeFood === null}
-          onPress={() => setFoodExpandSelector(!foodExpandSelector)}
-          className={`${inputClassName} border p-2 bg-gray-50`}
-        >
-          <Text className="text-lilas-dark">
-            {typeFood === null
-              ? "Selecione um tipo de alimento!"
-              : foodSelected || "Clique para selecionar o produto"}
-          </Text>
-        </TouchableOpacity>
+        <View className="mb-4">
+          <Text className={labelClassName}>Tipo de alimento</Text>
+          <View className="flex-row justify-between mt-2">
+            {food_type.map((food) => {
+              const IconComponent = food.icon;
 
-        {foodExpandSelector && typeFood !== null && (
-          <View className="absolute top-18 left-0 right-0 border border-primary-darker rounded-b-lg bg-white p-2 max-h-40 z-49">
-            {foods.length === 0 ? (
-              <View className="items-center py-4">
-                <Text className="text-sm font-semibold text-gray-500 mb-2">
-                  Nenhum produto deste tipo...
-                </Text>
-                <TouchableOpacity className="bg-accent rounded px-4 py-2">
-                  <Text className="text-white font-semibold">
-                    Registrar Produto
+              return (
+                <TouchableOpacity
+                  key={food.id_product_type}
+                  onPress={() => {
+                    clearListFood(food.id_product_type);
+                    setFoodExpandSelector(false);
+                  }}
+                  className={`w-[30%] h-24 rounded-lg bg-lilas border border-primary items-center justify-center p-1 will-change-variable
+                    ${typeFood === food.id_product_type ? "bg-purple-100 border-2" : ""}`}
+                >
+                  {IconComponent && <IconComponent width={32} height={32} />}
+
+                  <Text className="text-center font-nunito text-primary text-xs font-semibold mt-1">
+                    {food.product_type_name}
                   </Text>
                 </TouchableOpacity>
-              </View>
-            ) : (
-              <ScrollView nestedScrollEnabled={true}>
-                {foods.map((food) => (
+              );
+            })}
+          </View>
+        </View>
+
+        <View className="mb-4 relative z-50">
+          <Text className={labelClassName}>
+            Alimento{" "}
+            <Text className="italic text-xs font-normal">
+              (Apenas itens esgotados!)
+            </Text>
+          </Text>
+          <TouchableOpacity
+            disabled={typeFood === null}
+            onPress={() => setFoodExpandSelector(!foodExpandSelector)}
+            className={`${inputClassName} border p-2 bg-gray-50`}
+          >
+            <Text className="text-lilas-dark">
+              {typeFood === null
+                ? "Selecione um tipo de alimento!"
+                : foodSelected || "Clique para selecionar o produto"}
+            </Text>
+          </TouchableOpacity>
+
+          {foodExpandSelector && typeFood !== null && (
+            <View className="absolute top-18 left-0 right-0 border border-primary-darker rounded-b-lg bg-white p-2 max-h-40 z-49 shadow-lg">
+              {foods.length === 0 ? (
+                <View className="items-center py-4">
+                  <Text className="text-sm font-semibold text-gray-500 mb-2">
+                    Nenhum produto deste tipo...
+                  </Text>
+
+                  {/* CORREÇÃO APLICADA NO BOTÃO AQUI */}
                   <TouchableOpacity
-                    key={food.id}
-                    onPress={() => changeFoodSelected(food)}
-                    className="flex-row items-center py-2 border-b border-gray-100"
+                    onPress={() => router.push("/(app)/storage" as any)} // Rota ajustada para o Estoque
+                    className="bg-accent rounded px-4 py-2"
                   >
-                    <View className={radioButton}>
-                      {foodSelected === food.product_name && (
-                        <View className={radioButtonChecked} />
-                      )}
-                    </View>
-                    <Text className={`${labelRadioButton} ml-2`}>
-                      {food.product_name}
+                    <Text className="text-white font-semibold">
+                      Registrar Produto
                     </Text>
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-          </View>
-        )}
-      </View>
-
-      <View className={`${listProductsClass} mb-4 z-10`}>
-        <ScrollView nestedScrollEnabled={true}>
-          {listFood.map((food) => (
-            <View
-              key={food.id}
-              className="flex-row justify-between items-center py-1 border-b border-gray-50"
-            >
-              <Text className="text-lilas-dark font-semibold text-sm flex-1 mr-2">
-                {`${food.product_name} (${food.volume}${food.measure})`}
-              </Text>
-              <View className="flex-row items-center gap-2">
-                <View className={inputMeasureClass}>
-                  <TextInput
-                    keyboardType="numeric"
-                    onChangeText={(val) => changeQuantityFood(food.id, val)}
-                    value={food.quantity ? food.quantity.toString() : ""}
-                    placeholder="0"
-                    placeholderTextColor="#9CA3AF"
-                    className="w-12 p-0 text-sm text-primary-darker"
-                  />
-                  <Text className="text-xs">un</Text>
                 </View>
-                <TouchableOpacity onPress={() => removeItemRegister(food.id)}>
-                  <Trash width={24} height={24} />
-                </TouchableOpacity>
-              </View>
+              ) : (
+                <ScrollView nestedScrollEnabled={true}>
+                  {foods.map((food) => (
+                    <TouchableOpacity
+                      key={food.id}
+                      onPress={() => changeFoodSelected(food)}
+                      className="flex-row items-center py-2 border-b border-gray-100"
+                    >
+                      <View className={radioButton}>
+                        {foodSelected === food.product_name && (
+                          <View className={radioButtonChecked} />
+                        )}
+                      </View>
+                      <Text className={`${labelRadioButton} ml-2`}>
+                        {food.product_name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
             </View>
-          ))}
-        </ScrollView>
-      </View>
-
-      <View className="flex-col mb-6 z-10">
-        <Text className={labelClassName}>Descrição</Text>
-        <Controller
-          control={control}
-          name="description"
-          render={({ field: { onChange, value } }) => (
-            <TextInput
-              onChangeText={onChange}
-              value={value ?? ""}
-              maxLength={160}
-              multiline={true}
-              numberOfLines={3}
-              textAlignVertical="top"
-              className="w-full border border-primary-darker bg-white rounded px-2 py-2 text-lilas-dark min-h-20"
-            />
           )}
-        />
-      </View>
+        </View>
 
-      <View className="flex-row justify-between w-full h-12 mb-8 z-10">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className={buttonCancel}
-        >
-          <Text className="text-dark-purple font-semibold">Cancelar</Text>
-        </TouchableOpacity>
+        <View className={`${listProductsClass} mb-4 z-10`}>
+          <ScrollView nestedScrollEnabled={true}>
+            {listFood.map((food) => (
+              <View
+                key={food.id}
+                className="flex-row justify-between items-center py-1 border-b border-gray-50"
+              >
+                <Text className="text-lilas-dark font-semibold text-sm flex-1 mr-2">
+                  {`${food.product_name} (${food.volume}${food.measure})`}
+                </Text>
+                <View className="flex-row items-center gap-2">
+                  <View className={inputMeasureClass}>
+                    <TextInput
+                      keyboardType="numeric"
+                      onChangeText={(val) => changeQuantityFood(food.id, val)}
+                      value={food.quantity ? food.quantity.toString() : ""}
+                      placeholder="0"
+                      placeholderTextColor="#9CA3AF"
+                      className="w-12 p-0 text-sm text-primary-darker"
+                    />
+                    <Text className="text-xs">un</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => removeItemRegister(food.id)}>
+                    <Trash width={24} height={24} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
 
-        <TouchableOpacity
-          onPress={handleSubmit(sendDatas)}
-          className={buttonSubmit}
-        >
-          <Text className="text-white font-bold">Registrar</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        <View className="flex-col mb-6 z-10">
+          <Text className={labelClassName}>Descrição</Text>
+          <Controller
+            control={control}
+            name="description"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                onChangeText={onChange}
+                value={value ?? ""}
+                maxLength={160}
+                multiline={true}
+                numberOfLines={3}
+                textAlignVertical="top"
+                className="w-full border border-primary-darker bg-white rounded px-2 py-2 text-lilas-dark min-h-20"
+              />
+            )}
+          />
+        </View>
+
+        <View className="flex-row justify-between w-full h-12 mb-8 z-10">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className={buttonCancel}
+          >
+            <Text className="text-dark-purple font-semibold">Cancelar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleSubmit(sendDatas)}
+            className={buttonSubmit}
+          >
+            <Text className="text-white font-bold">Registrar</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

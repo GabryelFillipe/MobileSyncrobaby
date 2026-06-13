@@ -242,7 +242,7 @@ export default function AnotationDetails() {
                     editable={isEditing}
                     className={`font-nunito text-primary italic font-semibold h-10 ${
                       isEditing
-                        ? "border-2 border-primary rounded-sm w-32 text-center"
+                        ? "border-2 border-primary rounded-sm w-32 "
                         : ""
                     }`}
                   />

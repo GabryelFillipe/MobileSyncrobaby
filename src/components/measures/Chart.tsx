@@ -25,6 +25,12 @@ export default function Chart({ data, value_type }: Props) {
     }));
   }, [data, value_type]);
 
+  const maxValue = useMemo(() => {
+    if (chartData.length === 0) return 10;
+    const max = Math.max(...chartData.map((item) => item.value));
+    return Math.ceil(max + max * 0.2);
+  }, [chartData]);
+
   return (
     <View className="bg-lilas-bg py-4 px-2 rounded-xl shadow-purple-md items-center justify-center overflow-hidden">
       <BarChart
@@ -54,6 +60,8 @@ export default function Chart({ data, value_type }: Props) {
         rulesColor="#9d87d2"
         rulesType="dashed"
         isAnimated
+        maxValue={maxValue}
+        noOfSections={5}
         renderTooltip={(item: any) => {
           return (
             <View className="bg-purple-100 p-2 rounded-lg border border-purple-600 mb-2 shadow-sm">
