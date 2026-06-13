@@ -55,6 +55,7 @@ export default function Diary() {
           <View className="flex-row items-center w-full h-12 rounded-2xl bg-lilas shadow-purple-sm px-4 mt-6">
             <Search width={16} height={16} />
             <InputDefault
+              value={searchText}
               onChangeText={setSearchText}
               placeholder="Buscar..."
               className="flex-1 ml-3 font-poppins text-primary-text h-full"

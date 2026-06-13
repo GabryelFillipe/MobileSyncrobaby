@@ -324,7 +324,13 @@ export default function RoutineFeeding() {
                 <Text className="text-sm font-semibold text-gray-500 mb-2">
                   Nenhum produto deste tipo...
                 </Text>
-                <TouchableOpacity className="bg-accent rounded px-4 py-2">
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push(
+                      "/storage"
+                    )
+                  }
+                  className="bg-accent rounded px-4 py-2">
                   <Text className="text-white font-semibold">
                     Registrar Produto
                   </Text>

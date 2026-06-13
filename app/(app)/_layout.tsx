@@ -50,7 +50,7 @@ export const listIcons: IconsNavigation[] = [
     iconDesk: RoutineIconDesk,
     iconSelected: RoutineSelected,
     title: "Rotinas",
-    path: "/routines",
+    path: "/routine/routines",
   },
   {
     id: 3,

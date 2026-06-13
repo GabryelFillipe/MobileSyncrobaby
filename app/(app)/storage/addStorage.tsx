@@ -198,18 +198,18 @@ export default function AddStorage() {
 
   return (
     <TouchableWithoutFeedback onPress={handleOutsidePress}>
-      <View className="w-full min-h-full px-6">
-        <View className="w-full h-full flex-col">
+      <View className="w-full min-h-full px-6 flex">
+        <View className="w-full h-full flex gap-2">
           <View className="flex-col w-full">
             <Text className={labelClass}>Tipo de produto</Text>
 
-            <View className="flex-row flex-wrap items-center grow">
+            <View className="flex-row flex-wrap items-center justify-between grow">
               {typeListProduct.map((type) => {
                 const IconComponent = type.icon;
                 return (
                   <View
                     key={type.id_product_type}
-                    className={`w-[30%] h-40 bg-lilas border px-2 border-primary rounded-sm m-1 ${
+                    className={`w-[30%] h-30 bg-lilas border px-2 border-primary rounded-sm m-1 ${
                       typeProduct === type.id_product_type
                         ? "shadow-purple-sm bg-lilas-dark/10"
                         : ""
